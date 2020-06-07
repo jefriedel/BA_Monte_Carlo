@@ -1,5 +1,4 @@
 
-
 figure_data = BA_MC_data
 resp_col = "responses"
 sessions_col = "session_number"
@@ -15,6 +14,11 @@ inc_colors = c("red","black")
 
 names(inc_colors) = c("Include","Exclude")
 
+data_selection_plotter(figure_data = figure_data,
+                       resp_col = resp_col,
+                       sessions_col = sessions_col,
+                       subject_col = subject_col)
+
 data_selection_plotter = function(figure_data,
                                   resp_col,
                                   sessions_col,
@@ -23,7 +27,7 @@ data_selection_plotter = function(figure_data,
   
   if(is.na(color_criteria)) {
     figure_data = figure_data %>%
-      mutate(color_data = FALSE)
+      mutate(data_color = "Exclude")
   } else{
     
     figure_data = left_join(figure_data,

@@ -153,7 +153,11 @@ ui =
                       "Variables to include in filter",
                       choices = setdiff(col_descript,"Responses"),
                       width = "100%"
-                    )), 
+                    ),
+                    div(actionButton("filter_update",
+                                 "Uppdate Filter"),
+                        style = "float: right;")
+                    ), 
                   
                   #Column for dynamic filter selection
                   column(6,
@@ -174,8 +178,12 @@ ui =
 }#UI            
 
 server = function(input, output, session) {
+  
   #Create ractive data for handsontable
   curr_data = reactiveValues(data = BA_MC_data)
+  
+  #Create reactive data for filter
+  curr_filter = reactiveValues(data = NA)
   
   #Display plot of data for selecting filter
   output$data_input_plot = renderPlot(expr = {
@@ -183,11 +191,10 @@ server = function(input, output, session) {
       curr_data$data,
       make_clean_names(input$behv_select),
       make_clean_names(input$sess_select),
-      make_clean_names(input$sub_select)
+      make_clean_names(input$sub_select),
+      curr_filter$data
     )
   })
-  
-  
   
   #Initial render of table
   output$hot_curr_data = renderRHandsontable({
@@ -344,27 +351,85 @@ server = function(input, output, session) {
     
   })#Rename button
   
+  observeEvent(input$filter_update,{
+    
+    #Check if var select contains anything (NOT SURE)
+    #req(input$var_select)
+    
+    #Create vector of currently included variables
+    input_list = c()
+    
+    output_list = list()
+
+    for(j in 1:length(input$var_select)){
+             
+              #Get current name and add to list of names
+             curr_input = make_clean_names(input$var_select[j])
+             input_list = c(input_list,curr_input)
+             
+             #If nothing is selected in the filter, exclude from list
+             if(length(input[[paste0("input_", curr_input)]]) != 0) {
+               output_list[[curr_input]] =
+                 input[[paste0("input_", curr_input)]]
+             }
+             
+           }#Internal loop function
+        
+       
+    #Check if the output list contains anything
+    if(length(output_list)!=0){
+      #Create included variable grid, add include
+         curr_filter$data = cross_df(output_list)%>%
+      mutate(data_color = "Include")
+    }else{
+      #If the list is empty, return NA
+      curr_filter$data = NA
+    }
+      
+    rm(curr_input,j, input_list)
+
+    
+  })#Filter update button
   
-  #Creates a variable number of filters based on what datat is included
-  {
-  output$var_filters =
-    renderUI(#Loop through data columns
-      lapply(1:length(col_descript),
+  
+  #Creates a variable number of filters based on what data is included
+  {output$var_filters =
+    
+      #Combines: 
+      #https://stackoverflow.com/questions/45040598/issues-accessing-inputs-from-renderui-in-r-shiny
+      #https://stackoverflow.com/questions/51700437/dynamic-number-of-selectinput
+      
+      renderUI(
+      
+        if(length(input$var_select)==0){
+        
+        #Return blank if nothing is selected
+        return()
+        
+      }else{
+      
+      lapply(1:length(input$var_select),
              function(i) {
-               if (!(col_descript[i] %in% c(input$behv_select))) {
+               if (!(input$var_select %in% c(input$behv_select))) {
+                 
                  #Get list of items in the current filter
-                 curr_opts = BA_MC_data %>%
-                   pull(!!as.symbol(make_clean_names(col_descript[i]))) %>%
+                 curr_opts = curr_data$data %>%
+                   pull(!!as.symbol(make_clean_names(input$var_select[i]))) %>%
                    unique()
                  
                  #create individual inputs
-                 checkboxGroupInput("input_i",
-                                    col_descript[i],
-                                    choices =  curr_opts,
-                                    selected = curr_opts[1:length(curr_opts)])
+                 checkboxGroupInput(
+                   paste0("input_",
+                          make_clean_names(input$var_select[i])),
+                   input$var_select[i],
+                   choices =  curr_opts,
+                   selected = "" #curr_opts[1:length(curr_opts)]
+                 )
                }#If..then to skip over response rate
-             }))#Variable inputs for filtering data
-  }
+             }) #lapply end
+        }#Else to include inputs
+      )}
+  
 }#Server function
 
 runApp(list(ui = ui, server = server))
