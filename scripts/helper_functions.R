@@ -4,6 +4,8 @@ resp_col = "responses"
 sessions_col = "session_number"
 subject_col = "subject_number"
 
+temp = ""
+
 color_criteria =
 tibble(condition = c("Baseline","Extinction"),
        experimental_group = c("Sal_Sal","Amp_Sal")) %>%
