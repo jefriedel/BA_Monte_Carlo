@@ -38,7 +38,7 @@ ui =
                   h2(""),
                   
                   #Row for data controls
-                  {wellPanel(
+                  {fluidRow(
                     h2("Data controls"),
                     
                     p("If you upload or manually change values on the data table, click 
@@ -147,6 +147,15 @@ ui =
                     p("Below, select the variables you want to include in the filter and,
                       on the right, a list of values for that variable will appear."),
                     
+                    #List to select grouping factor
+                    selectInput(
+                      "comparison_select",
+                      "Groupings for Monte Carlo",
+                      choices = c("None",col_descript),
+                      selected = "None",
+                      width = "100%"
+                    ),
+                    
                     #Input for dynamic filter display
                     checkboxGroupInput(
                       "var_select",
@@ -168,8 +177,17 @@ ui =
                 
                   )#End of row with controls
               
-                )}#End of panel for plot
+                )},#End of panel for filters
               
+              "Monte Carlo",
+              
+              #Panel for Monte Carlo
+              {tabPanel("Run Monte Carlo",
+                
+                actionButton("btn_run_MC",
+                             "Run Monte Carlo")
+                
+              )}#Monte Carlo panel
               
             )#Navlist Panel
             
@@ -200,7 +218,7 @@ server = function(input, output, session) {
   output$hot_curr_data = renderRHandsontable({
     rhandsontable(curr_data$data,
                   colHeaders = col_descript,
-                  height = 400) %>%
+                  height = 300) %>%
       hot_cols(manualColumnResize = TRUE)
   })
   
@@ -283,7 +301,14 @@ server = function(input, output, session) {
     updateSelectInput(session,
                       "sub_select",
                       choice = col_descript,
-                      selected = "Subject Number")}
+                      selected = "Subject Number")
+    
+    updateSelectInput(session,
+                      "comparison_select",
+                      choices = c("None", col_descript),
+                      selected = "None")
+    
+    }
     
   })
   
@@ -323,19 +348,24 @@ server = function(input, output, session) {
     updateSelectInput(session,
                       "col_rename_input",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "behv_select",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "sess_select",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "sub_select",
                       choices = col_descript)
-    
+
+    updateSelectInput(session,
+                      "comparison_select",
+                      choices = c("None", col_descript),
+                      selected = "None")
+
     #Var list for filter
     updateCheckboxGroupInput( session = session,
                               inputId = "var_select",
@@ -391,6 +421,13 @@ server = function(input, output, session) {
     
   })#Filter update button
   
+  observeEvent(input$btn_run_MC,{
+    
+    grouping_factor = input$comparison_select
+    
+    if(grouping_factor == "None"){grouping_factor==NA}
+    
+  })
   
   #Creates a variable number of filters based on what data is included
   {output$var_filters =
