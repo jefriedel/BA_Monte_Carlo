@@ -56,30 +56,30 @@ data_selection_plotter = function(figure_data,
   
 }
 
-#Data for testing
-MC_data = BA_MC_data %>% 
-  group_by(subject_number) %>%
-  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-  ungroup()
+# #Variables for testing
+# MC_data2 = BA_MC_data %>% 
+#   group_by(subject_number) %>%
+#   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+#   ungroup()
+# 
+# MC_filter2 = tibble(condition = c("Reinstatement"),
+#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping2 = "experimental_group"
+# MC_responses2 = "log_responses"
+# 
+# MC_simulations2 = 1000
+# 
+# MC_seed2 = 1
 
-MC_filter = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
-
-MC_grouping = "experimental_group"
-MC_responses = "log_responses"
-
-MC_simulations = 1000
-
-MC_seed = 1
-
-# MC_func = function(MC_data,
-#                    MC_responses,
-#                    MC_filter,
-#                    MC_grouping,
-#                    MC_simulations,
-#                    MC_seed) {
+MC_func = function(MC_data,
+                   MC_responses,
+                   MC_filter,
+                   MC_grouping,
+                   MC_simulations,
+                   MC_seed) {
 
 #Turn in symbol so don't have to do it repeatedly
 MC_responses = as.symbol(MC_responses)
@@ -108,94 +108,66 @@ if(is.na(MC_filter)) {
                       na.rm=TRUE),
               sample_size = n())
   
+  #Create sim_data for looping
+  sim_data = tibble()
   
-  #Create tibble to get long form sample sizes
-  samples_per_group = tibble()
   
-      for (curr_group in (exp_data %>% pull(!!MC_grouping))) {
-      
-      #For each group
-      samples_per_group =
-        bind_rows(samples_per_group,
-                  
-                  #Expand current group against sample size
-                  expand_grid(
-                    !!MC_grouping := curr_group,
-                    MC_samp  = 1:(exp_data %>% 
-                                    filter(!!MC_grouping == curr_group) %>% 
-                                    pull(sample_size))
-                    )
-                  )
-    }
-  
-  rm(curr_group)
-  
-  #Create runs for each group
-  MC_run_data = expand_grid(!!MC_grouping := exp_data %>% pull(!!MC_grouping),
-              run = 1:MC_simulations)
-  
-  #Join 
-  MC_run_data = left_join(samples_per_group,
-            MC_run_data) %>%
-    arrange(!!MC_grouping,run)
-  
-  set.seed(MC_seed)
-  
-  # curr_group = (exp_data %>% pull(!!MC_grouping))
-  # curr_group = curr_group[1]
-  
-  MC_temp = tibble()
-  
-  #Loop to pull samples per group
-  for (curr_group in (exp_data %>% pull(!!MC_grouping))) {
-    
-    #Decided to create one sample list per group, probably faster than filtering across rows  
-    
-    #Take MC data
-    temp = MC_data %>% 
-      
-      #Filter for current group
-      filter(!!MC_grouping == curr_group) %>%
-      
-      #Sample that data
-      sample_n(
-        
-        #The sample size is the length of the output frame
-        size =     MC_run_data %>%
-          filter(!!MC_grouping == curr_group) %>%
-          nrow(),
-        
-        #Selection with replacement
-        replace = TRUE
-      )
-    
-    MC_temp = bind_rows(MC_temp,
-                        temp)
-    
-    rm(temp)
-    
-  }
-  
-  #Rename simulated grouping column
-  MC_temp = MC_temp %>% 
-    rename("sim_group" = !!MC_grouping)
+  curr_group = (exp_data %>% pull(!!MC_grouping))
+  curr_group = curr_group[1]
 
+  sim = 1
+    
+  for(curr_group in (exp_data %>% pull(!!MC_grouping))) {
+    #Filter the data once, to avoid repetitive filtering
+    filtered_MC =
+      MC_data %>%
+      filter(!!MC_grouping == curr_group)
+    
+    curr_size = exp_data %>%
+      filter(!!MC_grouping == curr_group) %>%
+      pull(sample_size)
+    
+    for (sim in 1:MC_simulations) {
+      
+      
+      sim_data = bind_rows(
+        sim_data,
+        filtered_MC %>%
+          sample_n(size = curr_size,
+                   replace = TRUE) %>%
+          group_by(!!MC_grouping) %>%
+          summarize(
+            mean = mean(!!MC_responses,
+                        na.rm = TRUE),
+            sd = sd(!!MC_responses,
+                    na.rm = TRUE)
+          ) %>%
+          mutate(run = sim)
+      )
+      
+      
+    } # Loop for current simulation
+    
+    #Remove to clear out memory
+    rm(filtered_MC)
+    
+  } #Loop for current group
   
-  #Bind run list with sample data
-  MC_run_data = bind_cols(MC_run_data,MC_temp)
-  
-  rm(MC_temp)
-  
-  #Get summary data from sims
-  sim_data = MC_run_data %>% 
-    group_by(!!MC_grouping,run) %>%
-    summarize(mean = mean(!!MC_responses,
-                          na.rm = TRUE),
-              sd = sd(!!MC_responses,
-                      na.rm=TRUE),
-              sample_size = n())
+  return(sim_data)
   
 }#If then to ensure that there is filtered data
 
-# } #Brace for end of MC function
+
+#Tictoc on 1000 is ~2 seconds, 10,000 is ~20 seconds (as predicted)
+#Tictoc was only run in local. To save server time. Limit app to 1000.
+
+ } #Brace for end of MC function
+# #Function test
+# temp = MC_func(MC_data2,
+#         MC_responses2,
+#         MC_filter2,
+#         MC_grouping2,
+#         MC_simulations2,
+#         MC_seed2)
+
 
