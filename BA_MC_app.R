@@ -191,7 +191,13 @@ ui =
                              "Number of Monte Carlo Simulations (0-1,000)",
                              value = 500,
                              min = 1,
-                             max = 1000)
+                             max = 1000),
+                
+                numericInput("MC_seed",
+                             "Set seed for randomize",
+                             value = sample.int(.Machine$integer.max,1),
+                             min = 1,
+                             max = .Machine$integer.max)
                 
               )}#Monte Carlo panel
               
@@ -442,7 +448,11 @@ server = function(input, output, session) {
     #Reset bounds, just in case
     if(runs < 1){runs = 1}
     if(runs > 1000){runs = 1000}
-      
+    
+    curr_seed = input$MC_seed  
+    
+    if(curr_seed < 1){curr_seed = 1}
+    if(curr_seed > .Machine$integer.max){curr_seed = .Machine$integer.max}
       
     #Run the MC
     curr_MC_out$data = MC_func(MC_data = curr_data$data,
@@ -450,7 +460,7 @@ server = function(input, output, session) {
             MC_filter = curr_filter$data,
             MC_grouping = grouping_factor,
             MC_simulations = runs,
-            MC_seed = 1)
+            MC_seed = curr_seed)
     
     
     rm(runs)
