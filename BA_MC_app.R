@@ -38,7 +38,7 @@ ui =
                   h2(""),
                   
                   #Row for data controls
-                  {wellPanel(
+                  {fluidRow(
                     h2("Data controls"),
                     
                     p("If you upload or manually change values on the data table, click 
@@ -147,6 +147,15 @@ ui =
                     p("Below, select the variables you want to include in the filter and,
                       on the right, a list of values for that variable will appear."),
                     
+                    #List to select grouping factor
+                    selectInput(
+                      "comparison_select",
+                      "Groupings for Monte Carlo",
+                      choices = c("None",col_descript),
+                      selected = "None",
+                      width = "100%"
+                    ),
+                    
                     #Input for dynamic filter display
                     checkboxGroupInput(
                       "var_select",
@@ -168,8 +177,23 @@ ui =
                 
                   )#End of row with controls
               
-                )}#End of panel for plot
+                )},#End of panel for filters
               
+              "Monte Carlo",
+              
+              #Panel for Monte Carlo
+              {tabPanel("Run Monte Carlo",
+                
+                actionButton("btn_run_MC",
+                             "Run Monte Carlo"),
+                
+                numericInput("MC_runs",
+                             "Number of Monte Carlo Simulations (0-1,000)",
+                             value = 500,
+                             min = 1,
+                             max = 1000)
+                
+              )}#Monte Carlo panel
               
             )#Navlist Panel
             
@@ -184,6 +208,8 @@ server = function(input, output, session) {
   
   #Create reactive data for filter
   curr_filter = reactiveValues(data = NA)
+  
+  curr_MC_out = reactiveValues(data = NA)
   
   #Display plot of data for selecting filter
   output$data_input_plot = renderPlot(expr = {
@@ -200,7 +226,7 @@ server = function(input, output, session) {
   output$hot_curr_data = renderRHandsontable({
     rhandsontable(curr_data$data,
                   colHeaders = col_descript,
-                  height = 400) %>%
+                  height = 300) %>%
       hot_cols(manualColumnResize = TRUE)
   })
   
@@ -283,7 +309,14 @@ server = function(input, output, session) {
     updateSelectInput(session,
                       "sub_select",
                       choice = col_descript,
-                      selected = "Subject Number")}
+                      selected = "Subject Number")
+    
+    updateSelectInput(session,
+                      "comparison_select",
+                      choices = c("None", col_descript),
+                      selected = "None")
+    
+    }
     
   })
   
@@ -323,19 +356,24 @@ server = function(input, output, session) {
     updateSelectInput(session,
                       "col_rename_input",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "behv_select",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "sess_select",
                       choices = col_descript)
-    
+
     updateSelectInput(session,
                       "sub_select",
                       choices = col_descript)
-    
+
+    updateSelectInput(session,
+                      "comparison_select",
+                      choices = c("None", col_descript),
+                      selected = "None")
+
     #Var list for filter
     updateCheckboxGroupInput( session = session,
                               inputId = "var_select",
@@ -391,6 +429,32 @@ server = function(input, output, session) {
     
   })#Filter update button
   
+  observeEvent(input$btn_run_MC,{
+    
+    grouping_factor = make_clean_names(input$comparison_select)
+    
+    if(grouping_factor == "none"){grouping_factor=NA}
+    
+    
+    
+    runs = input$MC_runs
+    
+    #Reset bounds, just in case
+    if(runs < 1){runs = 1}
+    if(runs > 1000){runs = 1000}
+      
+      
+    #Run the MC
+    curr_MC_out$data = MC_func(MC_data = curr_data$data,
+            MC_responses = make_clean_names(input$behv_select),
+            MC_filter = curr_filter$data,
+            MC_grouping = grouping_factor,
+            MC_simulations = runs,
+            MC_seed = 1)
+    
+    
+    rm(runs)
+  })
   
   #Creates a variable number of filters based on what data is included
   {output$var_filters =
