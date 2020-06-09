@@ -6,7 +6,10 @@ library(rhandsontable)
 BA_MC_data =
   read_csv("./data/Relapse Data 1.csv",
            col_types = cols()) %>%
-  clean_names()
+  clean_names() %>%
+  group_by(subject) %>%
+  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+  ungroup()
 
 #Read premade output for testing
 MC_out = read_csv("./data/MC_out.csv",
@@ -16,7 +19,8 @@ col_descript = c("Condition",
                  "Session Number",
                  "Responses",
                  "Subject Number",
-                 "Experimental Group")
+                 "Experimental Group",
+                 "log Responses")
 
 colnames(BA_MC_data) = col_descript
 
@@ -249,7 +253,25 @@ server = function(input, output, session) {
     )
   })
   
-  #Initial render of table
+  #Plotter currently relies fixed filter, needs to be fixed
+  output$MC_out_plot = renderPlot({
+    
+    MC_out_plotter(MC_data = curr_MC_out$data,
+                   exp_data = exp_out_func(
+                     curr_data$data,
+                     "experimental_group",       
+                     MC_filter = tibble(
+                       condition = c("Reinstatement"),
+                       experimental_group = c("Sal_Sal", "Amp_Sal")) %>%
+                       expand(condition, experimental_group) %>%
+                       mutate(MC_include = "Include"),
+                     "log_responses"),
+                   MC_grouping = "experimental_group",
+                   MC_responses = "log_responses")
+    
+  })
+  
+  #Initial render of input table
   output$hot_curr_data = renderRHandsontable({
     rhandsontable(curr_data$data,
                   colHeaders = col_descript,
@@ -320,12 +342,10 @@ server = function(input, output, session) {
                     colHeaders = col_descript,
                     height = 400) %>%
         hot_cols(manualColumnResize = TRUE)
+
+      }) #Render table
       
-    
-      
-    }) #Render table
-    
-    #Update lists
+    #$Update lists
     {updateSelectInput(session,
                       "col_rename_input",
                       choices = col_descript)
@@ -349,6 +369,14 @@ server = function(input, output, session) {
                       "comparison_select",
                       choices = c("None", col_descript),
                       selected = "None")
+    
+    #Update MC Output
+    output$MC_out_table = 
+      renderRHandsontable({
+        rhandsontable(curr_MC_out$data, height = 300) %>%
+          hot_col("run",
+                  format = "0")
+      })
     
     }
     
@@ -533,6 +561,7 @@ server = function(input, output, session) {
       )}
   
   #Dataoutput handler
+  {
   output$download_MC_output = downloadHandler(
     
     filename = "Monte Carlo Output.csv",
@@ -540,9 +569,7 @@ server = function(input, output, session) {
     content = function(file){
       write_csv(curr_MC_out$data,file)
       }
-      
-    
-  )
+  )}
   
 }#Server function
 
