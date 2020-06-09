@@ -56,23 +56,24 @@ data_selection_plotter = function(figure_data,
   
 }
 
-# #Variables for testing
-# MC_data2 = BA_MC_data %>% 
+# #Variables for testing build
+# MC_data = BA_MC_data %>%
 #   group_by(subject_number) %>%
 #   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
 #   ungroup()
 # 
-# MC_filter2 = tibble(condition = c("Reinstatement"),
+# MC_filter = tibble(condition = c("Reinstatement"),
 #                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
 #   expand(condition, experimental_group) %>%
 #   mutate(MC_include = "Include")
 # 
-# MC_grouping2 = "experimental_group"
-# MC_responses2 = "log_responses"
+# MC_grouping = "experimental_group"
 # 
-# MC_simulations2 = 1000
+# MC_responses = "log_responses"
 # 
-# MC_seed2 = 1
+# 
+# MC_simulations = 1000
+# MC_seed = 1
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -83,11 +84,23 @@ MC_func = function(MC_data,
 
 #Turn in symbol so don't have to do it repeatedly
 MC_responses = as.symbol(MC_responses)
+
+if(is.na(MC_grouping)){
+  
+  #If there is no grouping factor, create one with no groups
+  MC_data = MC_data %>% mutate(grouping = "None")
+  MC_grouping = "grouping"
+  
+}
+  
 MC_grouping = as.symbol(MC_grouping)
+
 
 if(is.na(MC_filter)) {
   #If there is no MC_filter, don't run
-  return()
+  
+  MC_data = MC_data %>%
+    mutate(MC_include = "Include")
   
 } else{
   
@@ -97,7 +110,7 @@ if(is.na(MC_filter)) {
     
     #Exclude everything not on include
     replace_na(list(MC_include = "Exclude"))
-  
+}  
   #Means, SDs, counts for each group
   exp_data = MC_data %>% 
     filter(MC_include=="Include") %>%
@@ -155,19 +168,41 @@ if(is.na(MC_filter)) {
   
   return(sim_data)
   
-}#If then to ensure that there is filtered data
+#If then to ensure that there is filtered data
 
 
 #Tictoc on 1000 is ~2 seconds, 10,000 is ~20 seconds (as predicted)
 #Tictoc was only run in local. To save server time. Limit app to 1000.
 
  } #Brace for end of MC function
-# #Function test
-# temp = MC_func(MC_data2,
-#         MC_responses2,
-#         MC_filter2,
-#         MC_grouping2,
-#         MC_simulations2,
-#         MC_seed2)
 
+MC_data2 = BA_MC_data %>%
+  group_by(subject_number) %>%
+  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+  ungroup()
+
+MC_filter2 = tibble(condition = c("Reinstatement"),
+                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+  expand(condition, experimental_group) %>%
+  mutate(MC_include = "Include")
+
+MC_filter3 = NA
+
+MC_grouping2 = "experimental_group"
+MC_grouping3 = NA
+
+MC_responses2 = "log_responses"
+
+
+MC_simulations2 = 1000
+MC_seed2 = 1
+
+
+#Function test
+MC_func(MC_data2,
+        MC_responses2,
+        MC_filter3,
+        MC_grouping3,
+        MC_simulations2,
+        MC_seed2)
 

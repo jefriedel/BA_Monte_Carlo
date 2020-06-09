@@ -185,7 +185,13 @@ ui =
               {tabPanel("Run Monte Carlo",
                 
                 actionButton("btn_run_MC",
-                             "Run Monte Carlo")
+                             "Run Monte Carlo"),
+                
+                numericInput("MC_runs",
+                             "Number of Monte Carlo Simulations (0-1,000)",
+                             value = 500,
+                             min = 1,
+                             max = 1000)
                 
               )}#Monte Carlo panel
               
@@ -202,6 +208,8 @@ server = function(input, output, session) {
   
   #Create reactive data for filter
   curr_filter = reactiveValues(data = NA)
+  
+  curr_MC_out = reactiveValues(data = NA)
   
   #Display plot of data for selecting filter
   output$data_input_plot = renderPlot(expr = {
@@ -423,10 +431,29 @@ server = function(input, output, session) {
   
   observeEvent(input$btn_run_MC,{
     
-    grouping_factor = input$comparison_select
+    grouping_factor = make_clean_names(input$comparison_select)
     
-    if(grouping_factor == "None"){grouping_factor==NA}
+    if(grouping_factor == "none"){grouping_factor=NA}
     
+    
+    
+    runs = input$MC_runs
+    
+    #Reset bounds, just in case
+    if(runs < 1){runs = 1}
+    if(runs > 1000){runs = 1000}
+      
+      
+    #Run the MC
+    curr_MC_out$data = MC_func(MC_data = curr_data$data,
+            MC_responses = make_clean_names(input$behv_select),
+            MC_filter = curr_filter$data,
+            MC_grouping = grouping_factor,
+            MC_simulations = runs,
+            MC_seed = 1)
+    
+    
+    rm(runs)
   })
   
   #Creates a variable number of filters based on what data is included
