@@ -198,11 +198,13 @@ if(is.na(MC_filter)) {
 # MC_seed2 = 1
 # 
 # 
-# #Function test
-# MC_func(MC_data2,
-#         MC_responses2,
-#         MC_filter3,
-#         MC_grouping3,
-#         MC_simulations2,
-#         MC_seed2)
+#Function test for building MC_output
+MC_out = MC_func(MC_data2,
+        MC_responses2,
+        MC_filter2,
+        MC_grouping2,
+        MC_simulations2,
+        MC_seed2)
+
+
 

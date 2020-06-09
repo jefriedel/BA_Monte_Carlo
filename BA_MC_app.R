@@ -8,6 +8,10 @@ BA_MC_data =
            col_types = cols()) %>%
   clean_names()
 
+#Read premade output for testing
+MC_out = read_csv("./data/MC_out.csv",
+                  col_types = cols())
+
 col_descript = c("Condition",
                  "Session Number",
                  "Responses",
@@ -199,7 +203,24 @@ ui =
                              min = 1,
                              max = .Machine$integer.max)
                 
-              )}#Monte Carlo panel
+              )}, #Monte Carlo panel
+              
+              #MC output panel
+              {
+              tabPanel("Monte Carlo Output",
+                       
+                       #Plot of MC
+                       plotOutput("MC_out_plot",
+                                  width = "100%"),
+                       
+                       #MC Data output handler
+                       rHandsontableOutput("MC_out_table"),
+                       
+                       #Downloads
+                       downloadButton("download_MC_output",
+                                      "Download Output")
+                       
+                       )}
               
             )#Navlist Panel
             
@@ -215,7 +236,7 @@ server = function(input, output, session) {
   #Create reactive data for filter
   curr_filter = reactiveValues(data = NA)
   
-  curr_MC_out = reactiveValues(data = NA)
+  curr_MC_out = reactiveValues(data = MC_out)
   
   #Display plot of data for selecting filter
   output$data_input_plot = renderPlot(expr = {
@@ -235,6 +256,13 @@ server = function(input, output, session) {
                   height = 300) %>%
       hot_cols(manualColumnResize = TRUE)
   })
+  
+  #Temp render of precalculated output table
+  output$MC_out_table = renderRHandsontable({
+    rhandsontable(curr_MC_out$data, height = 300) %>%
+      hot_col("run",
+              format = "0")
+    })
   
   #Update data in table
   observeEvent(input$update, {
@@ -503,6 +531,18 @@ server = function(input, output, session) {
              }) #lapply end
         }#Else to include inputs
       )}
+  
+  #Dataoutput handler
+  output$download_MC_output = downloadHandler(
+    
+    filename = "Monte Carlo Output.csv",
+    
+    content = function(file){
+      write_csv(curr_MC_out$data,file)
+      }
+      
+    
+  )
   
 }#Server function
 
