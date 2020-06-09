@@ -176,33 +176,33 @@ if(is.na(MC_filter)) {
 
  } #Brace for end of MC function
 
-MC_data2 = BA_MC_data %>%
-  group_by(subject_number) %>%
-  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-  ungroup()
-
-MC_filter2 = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
-
-MC_filter3 = NA
-
-MC_grouping2 = "experimental_group"
-MC_grouping3 = NA
-
-MC_responses2 = "log_responses"
-
-
-MC_simulations2 = 1000
-MC_seed2 = 1
-
-
-#Function test
-MC_func(MC_data2,
-        MC_responses2,
-        MC_filter3,
-        MC_grouping3,
-        MC_simulations2,
-        MC_seed2)
+# MC_data2 = BA_MC_data %>%
+#   group_by(subject_number) %>%
+#   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+#   ungroup()
+# 
+# MC_filter2 = tibble(condition = c("Reinstatement"),
+#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_filter3 = NA
+# 
+# MC_grouping2 = "experimental_group"
+# MC_grouping3 = NA
+# 
+# MC_responses2 = "log_responses"
+# 
+# 
+# MC_simulations2 = 1000
+# MC_seed2 = 1
+# 
+# 
+# #Function test
+# MC_func(MC_data2,
+#         MC_responses2,
+#         MC_filter3,
+#         MC_grouping3,
+#         MC_simulations2,
+#         MC_seed2)
 
