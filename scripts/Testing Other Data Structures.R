@@ -2,8 +2,6 @@ library(tidyverse)
 library(janitor)
 library(glue)
 
-
-
 raw_data = 
   read_csv("E:/Google Drive/.Professional/Research/Projects/Active/ABAParCor/aba_parcor_calc/Data/ClaJ.csv")
 
@@ -37,3 +35,4 @@ other_data = other_data %>%
   mutate(med_change = row_number()==n_back)
 
 
+other_data %>% filter(med_change) %>% pull(log_behv) %>% mean(na.rm=TRUE)

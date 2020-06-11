@@ -81,13 +81,21 @@ data_selection_plotter = function(figure_data,
 
 other_filter = tibble(med_change = TRUE, MC_include = "Include")
 
-MC_out = MC_func(MC_data = other_data,
-MC_responses = "log_behv",
-MC_filter = other_filter,
-MC_grouping = NA,
-MC_simulations = 1000,
-MC_seed = 1)
+MC_out = MC_func(
+  MC_data = other_data,
+  MC_responses = "log_behv",
+  MC_filter = other_filter,
+  MC_grouping = NA,
+  MC_simulations = 1000,
+  MC_seed = 1
+)
 
+MC_data = other_data
+MC_responses = "log_behv"
+MC_filter = other_filter
+MC_grouping = NA
+MC_simulations = 1000
+MC_seed = 1
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -98,6 +106,8 @@ MC_func = function(MC_data,
 
 #Turn in symbol so don't have to do it repeatedly
 MC_responses = as.symbol(MC_responses)
+
+MC_data = MC_data %>% ungroup()
 
 if(is.na(MC_grouping)){
   
@@ -138,6 +148,7 @@ if(is.na(MC_filter)) {
   #Create sim_data for looping
   sim_data = tibble()
   
+  set.seed(MC_seed)
   
   curr_group = (exp_data %>% pull(!!MC_grouping))
   curr_group = curr_group[1]
@@ -167,7 +178,8 @@ if(is.na(MC_filter)) {
             mean = mean(!!MC_responses,
                         na.rm = TRUE),
             sd = sd(!!MC_responses,
-                    na.rm = TRUE)
+                    na.rm = TRUE),
+            MC_samp = (n())
           ) %>%
           mutate(run = sim)
       )
@@ -345,8 +357,8 @@ MC_out_plotter = function(MC_data,
     geom_histogram(bins = 50) +
     facet_wrap(vars(!!MC_grouping)) +
     theme_classic() +
-    xlab("Frequency") + 
-    ylab(paste("Mean",MC_responses)) +
+    ylab("Frequency") + 
+    xlab(paste("Mean",MC_responses)) +
     geom_vline(data = exp_data,
                aes(xintercept = mean),
                color = "red")
@@ -387,4 +399,9 @@ MC_out_plotter(MC_data = MC_out,
                           MC_grouping = NA,
                           MC_responses = "log_behavior")
 
+
+MC_out_plotter(MC_data = sim_data,
+               exp_data = exp_data,
+               MC_grouping = NA,
+               MC_responses = "log_behavior")
 
