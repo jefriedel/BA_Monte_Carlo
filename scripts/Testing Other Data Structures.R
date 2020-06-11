@@ -29,8 +29,9 @@ raw_data = raw_data %>%
 other_data = raw_data %>% select(week, med_cond,programme_changes,total_prob_bx_types)
 
 other_data = other_data %>% 
-  mutate(log_behv = log2(total_prob_bx_types / lag(total_prob_bx_types))) %>%
+  mutate(sub = 1,
+         log_behv = log2((1+total_prob_bx_types) / (1+lag(total_prob_bx_types)))) %>%
   group_by(med_cond) %>%
   mutate(med_change = row_number()==1)
 
-other_data %>% pull(med_cond) %>% max()
+

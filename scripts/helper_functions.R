@@ -1,25 +1,25 @@
 #Function for plotting input/filtering----
 
-#Data for testing plotting function
-figure_data = BA_MC_data
-resp_col = "responses"
-sessions_col = "session_number"
-subject_col = "subject_number"
-
-color_criteria =
-tibble(condition = c("Baseline","Extinction"),
-       experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(data_color = "Include")
-
-#Colors for plotting
-inc_colors = c("red","black")
-names(inc_colors) = c("Include","Exclude")
-
-data_selection_plotter(figure_data = figure_data,
-                       resp_col = resp_col,
-                       sessions_col = sessions_col,
-                       subject_col = subject_col)
+# #Data for testing plotting function
+# figure_data = BA_MC_data
+# resp_col = "responses"
+# sessions_col = "session_number"
+# subject_col = "subject_number"
+# 
+# color_criteria =
+# tibble(condition = c("Baseline","Extinction"),
+#        experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(data_color = "Include")
+# 
+# #Colors for plotting
+# inc_colors = c("red","black")
+# names(inc_colors) = c("Include","Exclude")
+# 
+# data_selection_plotter(figure_data = figure_data,
+#                        resp_col = resp_col,
+#                        sessions_col = sessions_col,
+#                        subject_col = subject_col)
 
 #Function to plot data for seleecting filter
 data_selection_plotter = function(figure_data,
@@ -60,24 +60,34 @@ data_selection_plotter = function(figure_data,
 
 
 #Function for MC simulations----
-#Variables for testing build
-MC_data = BA_MC_data %>%
-  group_by(subject_number) %>%
-  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-  ungroup()
+# #Variables for testing build
+# MC_data = BA_MC_data %>%
+#   group_by(subject_number) %>%
+#   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+#   ungroup()
+# 
+# MC_filter = tibble(condition = c("Reinstatement"),
+#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping = "experimental_group"
+# 
+# MC_responses = "log_responses"
+# 
+# 
+# MC_simulations = 1000
+# MC_seed = 1
 
-MC_filter = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
+other_filter = tibble(med_change = TRUE, MC_include = "Include")
 
-MC_grouping = "experimental_group"
-
-MC_responses = "log_responses"
-
-
+MC_data = other_data
+MC_responses = "log_behv"
+MC_filter = other_filter
+MC_grouping = NA
 MC_simulations = 1000
 MC_seed = 1
+
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -116,15 +126,15 @@ if(is.na(MC_filter)) {
     replace_na(list(MC_include = "Exclude"))
 }  
   # #Means, SDs, counts for each group
-  # exp_data = MC_data %>% 
-  #   filter(MC_include=="Include") %>%
-  #   group_by(!!MC_grouping) %>%
-  #   summarize(mean = mean(!!MC_responses,
-  #                         na.rm = TRUE),
-  #             sd = sd(!!MC_responses,
-  #                     na.rm=TRUE),
-  #             sample_size = n())
-  
+  exp_data = MC_data %>%
+    filter(MC_include=="Include") %>%
+    group_by(!!MC_grouping) %>%
+    summarize(mean = mean(!!MC_responses,
+                          na.rm = TRUE),
+              sd = sd(!!MC_responses,
+                      na.rm=TRUE),
+              sample_size = n())
+
   #Create sim_data for looping
   sim_data = tibble()
   
@@ -180,6 +190,8 @@ if(is.na(MC_filter)) {
 
  } #Brace for end of MC function
 
+
+
 # MC_data2 = BA_MC_data %>%
 #   group_by(subject_number) %>%
 #   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
@@ -202,29 +214,32 @@ if(is.na(MC_filter)) {
 # MC_seed2 = 1
 
 
-#Function test for building MC_output
-MC_out = MC_func(MC_data2,
-        MC_responses2,
-        MC_filter2,
-        MC_grouping2,
-        MC_simulations2,
-        MC_seed2)
+# #Function test for building MC_output
+# MC_out = MC_func(MC_data2,
+#         MC_responses2,
+#         MC_filter2,
+#         MC_grouping2,
+#         MC_simulations2,
+#         MC_seed2)
 
 #Function to get experimental data output----
-
-MC_data = BA_MC_data %>%
-  group_by(subject_number) %>%
-  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-  ungroup()
-
-MC_filter = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
-
-MC_grouping = "experimental_group"
-
-MC_responses = "log_responses"
+# 
+# 
+# MC_data = BA_MC_data %>%
+#   group_by(subject_number) %>%
+#   mutate(log_responses = log2((responses + 1) / (lag(responses) + 1))) %>%
+#   ungroup()
+# 
+# MC_filter = tibble(
+#   condition = c("Reinstatement"),
+#   experimental_group = c("Sal_Sal", "Amp_Sal")
+# ) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping = "experimental_group"
+# 
+# MC_responses = "log_responses"
 
 
 exp_out_func = function(MC_data,
@@ -289,16 +304,24 @@ exp_out_func = function(MC_data,
 
 #Plotting output from MC simulations----
 
+# MC_data = MC_out
+# 
+# MC_filter = tibble(condition = c("Reinstatement"),
+#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping = "experimental_group"
+# 
+# MC_responses = "log_responses"
+
+#For new data
+
+other_filter = tibble(med_change = TRUE, MC_include = "Include")
+
 MC_data = MC_out
-
-MC_filter = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
-
-MC_grouping = "experimental_group"
-
-MC_responses = "log_responses"
+MC_grouping = NA
+MC_responses = "log_behavior"
 
 MC_out_plotter = function(MC_data,
                           exp_data,
@@ -330,26 +353,35 @@ MC_out_plotter = function(MC_data,
   
 }
 
-MC_data2 = MC_out
+# MC_data2 = MC_out
+# 
+# MC_filter2 = tibble(condition = c("Reinstatement"),
+#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping2 = "experimental_group"
+# 
+# MC_responses2 = "log_responses"
+# 
+# exp_out = exp_out_func(MC_data,
+#                      MC_grouping = "experimental_group",
+#                      MC_filter2,
+#                      MC_responses2)
+# 
+# MC_out_plotter(MC_data2,
+#                exp_out,
+#                MC_grouping2)
 
-MC_filter2 = tibble(condition = c("Reinstatement"),
-                   experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(MC_include = "Include")
+#For new data
 
-MC_grouping2 = "experimental_group"
+other_filter = tibble(med_change = TRUE, MC_include = "Include")
 
-MC_responses2 = "log_responses"
+MC_data = other_data
 
-exp_out = exp_out_func(MC_data,
-                     MC_grouping = "experimental_group",
-                     MC_filter2,
-                     MC_responses2)
-
-MC_out_plotter(MC_data2,
-               exp_out,
-               MC_grouping2)
-
-
+MC_out_plotter(MC_data = MC_out,
+                          exp_data = exp_data,
+                          MC_grouping = NA,
+                          MC_responses = "log_behavior")
 
 

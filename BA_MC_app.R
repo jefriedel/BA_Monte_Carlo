@@ -15,12 +15,25 @@ BA_MC_data =
 MC_out = read_csv("./data/MC_out.csv",
                   col_types = cols())
 
-col_descript = c("Condition",
-                 "Session Number",
-                 "Responses",
-                 "Subject Number",
-                 "Experimental Group",
-                 "log Responses")
+# default MC description
+# col_descript = c("Condition",
+#                  "Session Number",
+#                  "Responses",
+#                  "Subject Number",
+#                  "Experimental Group",
+#                  "log Responses")
+
+#testing new data column descriptors                  
+col_descript = c("Week",
+"Medication Condition",
+"Behavioral Programme",
+"Problem Behavior Count",
+"Subject",
+"log Problem Behavior",
+"Med change")
+
+BA_MC_data = other_data
+
 
 colnames(BA_MC_data) = col_descript
 
