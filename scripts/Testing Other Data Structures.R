@@ -28,10 +28,12 @@ raw_data = raw_data %>%
 
 other_data = raw_data %>% select(week, med_cond,programme_changes,total_prob_bx_types)
 
+n_back = 1
+
 other_data = other_data %>% 
   mutate(sub = 1,
-         log_behv = log2((1+total_prob_bx_types) / (1+lag(total_prob_bx_types)))) %>%
+         log_behv = log2((1+total_prob_bx_types) / (1+lag(total_prob_bx_types, n = n_back)))) %>%
   group_by(med_cond) %>%
-  mutate(med_change = row_number()==1)
+  mutate(med_change = row_number()==n_back)
 
 

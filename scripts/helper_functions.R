@@ -81,12 +81,12 @@ data_selection_plotter = function(figure_data,
 
 other_filter = tibble(med_change = TRUE, MC_include = "Include")
 
-MC_data = other_data
-MC_responses = "log_behv"
-MC_filter = other_filter
-MC_grouping = NA
-MC_simulations = 1000
-MC_seed = 1
+MC_out = MC_func(MC_data = other_data,
+MC_responses = "log_behv",
+MC_filter = other_filter,
+MC_grouping = NA,
+MC_simulations = 1000,
+MC_seed = 1)
 
 
 MC_func = function(MC_data,
@@ -240,7 +240,10 @@ if(is.na(MC_filter)) {
 # MC_grouping = "experimental_group"
 # 
 # MC_responses = "log_responses"
-
+exp_out = exp_out_func(other_data,
+             NA,
+             other_filter,
+             "log_behv")
 
 exp_out_func = function(MC_data,
                         MC_grouping,
