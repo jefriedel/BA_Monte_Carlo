@@ -36,3 +36,10 @@ other_data = other_data %>%
 
 
 other_data %>% filter(med_change) %>% pull(log_behv) %>% mean(na.rm=TRUE)
+
+MC_out %>% 
+  filter(mean >= exp_out %>% 
+           pull(mean)
+         ) %>%
+  nrow() / MC_out %>% nrow()
+
