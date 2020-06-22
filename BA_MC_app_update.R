@@ -3,6 +3,8 @@ library(tidyverse)
 library(janitor)
 library(rhandsontable)
 
+source("./scripts/load_files.R")
+
 BA_MC_data =
   read_csv("./data/Relapse Data 1.csv",
            col_types = cols()) %>%
