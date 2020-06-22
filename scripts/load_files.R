@@ -4,7 +4,11 @@ library(janitor)
 mc_data = list()
 
 relapse1  = read_csv("./data/Relapse Data 1.csv",
-                     col_types = cols()) %>%
+                     col_types = cols())
+
+mc_data$example$col_names = colnames(relapse1)
+
+relapse1 = relapse1  %>%
   clean_names()
 
 relapse1 = relapse1 %>%
@@ -22,7 +26,7 @@ relapse1 = relapse1 %>%
 #                                   levels = c("Baseline","Extinction","Renewal")))
 
 
-mc_data$relapse1$data = relapse1
-mc_data$relapse1$col_names = colnames(relapse1)
+
+mc_data$example$data = relapse1
 
 rm(relapse1,relapse3)

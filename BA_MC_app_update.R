@@ -3,86 +3,91 @@ library(tidyverse)
 library(janitor)
 library(rhandsontable)
 
+options(shiny.reactlog = TRUE)
+
 source("./scripts/load_files.R")
 
-BA_MC_data =
-  read_csv("./data/Relapse Data 1.csv",
-           col_types = cols()) %>%
-  clean_names() %>%
-  group_by(subject) %>%
-  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-  ungroup()
-
-#Read premade output for testing
-MC_out = read_csv("./data/MC_out.csv",
-                  col_types = cols())
-
-# default MC description
-# col_descript = c("Condition",
-#                  "Session Number",
-#                  "Responses",
-#                  "Subject Number",
-#                  "Experimental Group",
-#                  "log Responses")
-
-#testing new data column descriptors                  
-col_descript = c("Week",
-"Medication Condition",
-"Behavioral Programme",
-"Problem Behavior Count",
-"Subject",
-"log Problem Behavior",
-"Med change")
-
-BA_MC_data = other_data
-
-
-colnames(BA_MC_data) = col_descript
-
-BA_MC_data = BA_MC_data %>% clean_names
-
-
 { #Bracket for UI
-ui =
-  fluidPage(titlePanel("Monte Carlo for SCED"),
+ui = 
+
+    
+  fluidPage(
+    
+    tags$head(
+    tags$style(HTML("
+      h2 {
+        line-height: 1.1;
+        margin-top: 0px;
+      }"))), #CSS 
+    
+    titlePanel(h1("Monte Carlo for SCED")),
             
             navlistPanel(
-              #Header
               "Data",
               
-              #Panel for import
-              {
+              #Row for data controls
+              {tabPanel("Import",
+                column(12, #Column for spacing
+                  fluidRow(
+                    h2("Import Data"),
+                    
+                    p("The app requires that the data be in a \"Long Format.\" This means that
+                      the app expects only one measure of responding per row. Other factors, such
+                      as subject number or condition, should be repeated for each row of data.
+                      Load the example data to see the expected format."),
+                    p("The app also expects a file that includes columns for subject/participant, session 
+                      numbers, and respoding. If you do not need a subject/participant identifier, just
+                      add a dummy code to your data file. Session number is necessary to plot your data, if 
+                      your data uses something other than sessions (i.e., date), you must recode 
+                      that into session numbers."),
+                    p("Finally, the data must be in a comma-seperated file format (.csv)"),
+                    
+                    fileInput("new_file",
+                              label = "Select .csv File to Upload",
+                              accept = c(".csv"),
+                              multiple = FALSE),
+                      
+                    
+                    
+                    #actionButton("load_new","Load New Data",
+                    #             icon = icon("file-upload", lib = "font-awesome")),
+                    
+                    
+                h2("Example Data"),
+                
+                p("Click the \"Example Button\" below to reset to table back to the included
+                      example data."),
+                
+                actionButton("reset", "Example Data",
+                             icon = icon("cloud-download-alt", lib = "font-awesome"))
+                )#Row
+                
+                ) #COlumn for spacing
+              )}, #Import panel
+              
+              #View and update panel
+              { 
                 tabPanel(
-                  "Import",
+                  "View & Modify",
+                  h2("Data Table"),
                   
                   #Data table
-                  rHandsontableOutput("hot_curr_data"),
-                  #Spacer
-                  h2(""),
-                  
-                  #Row for data controls
-                  {fluidRow(
-                    h2("Data controls"),
-                    
-                    p("If you upload or manually change values on the data table, click 
+                  div(rHandsontableOutput("data_display",
+                                      height = 300),
+                      style = "margin-bottom: 10px;"),
+                  p("If you manually change values on the data table, click 
                       to update the data to ensure it loads properly into the app."),
-                    
-                    div(actionButton("update",
-                                 "Update"),
-                        style = "padding-bottom: 10px;"),
-                    
-                    p("Click the \"Example Button\" below to reset to table back to the included
-                      example data."),
-                    
-                    actionButton("reset", "Example Data"))#End of import panel
-                    
-                  },
-                    
-                    #Column for data controls
+                  
+                  div(actionButton("update",
+                                   "Update"),
+                      style = "padding-bottom: 10px;"),
+                  
+                  #Column for data controls
                   
                   #Row for inputs
                   
                   fluidRow(
+                    column(12,
                     column(#Right column
                       6,
                       
@@ -94,8 +99,7 @@ ui =
                         selectInput(
                           "behv_select",
                           "Column with responding",
-                          choices = col_descript,
-                          selected = "Responses",
+                          choices = NULL,
                           width = "100%"
                         ),
                         
@@ -103,8 +107,7 @@ ui =
                         selectInput(
                           "sess_select",
                           "Column with sessions",
-                          choices = col_descript,
-                          selected = "Session Number",
+                          choices = NULL,
                           width = "100%"
                         ),
                         
@@ -112,136 +115,35 @@ ui =
                         selectInput(
                           "sub_select",
                           "Column with participant/subject",
-                          choices = col_descript,
-                          selected = "Subject Number",
+                          choices = NULL,
                           width = "100%"
                         ),
                         
                       )}#Row for specifying X, Y, subject),
                       
                     ), #Lefthand column
-                      
-                  {column(
-                    6,
-                    h2("Rename Columns"),
-                    selectInput(
-                      "col_rename_input",
-                      "Column to Rename",
-                      choices = col_descript,
-                      width = "100%"
-                    ),
-                    textInput("new_col_name",
-                              "New Column Name", width = "100%"),
-                    div(actionButton("rename_button",
-                                     "Rename"), style = "float: right;")
-                  )}#End of rename column
-                  
+                    
+                    {column(
+                      6,
+                      h2("Rename Columns"),
+                      selectInput(
+                        "col_rename_input",
+                        "Column to Rename",
+                        choices = NULL,
+                        width = "100%"
+                      ),
+                      textInput("new_col_name",
+                                "New Column Name", width = "100%"),
+                      div(actionButton("rename_button",
+                                       "Rename"), style = "float: right;")
+                    )}#End of rename column
+                    
+                    )#Cxtra column for spacing
                   )# End of input row
-                )}, #End of import panel
+                )} #End of modify
+              
+            )#Nav
 
-                      
-                      # #Column for import buttons
-                      # column(4,
-                      # actionButton(
-                      #   "rename_col",
-                      #   "Column Rename",
-                      #   width = "100%",
-                      #   style = "margin-bottom: 1em;"
-                      # ))
-                  
-                  
-              #Panel for plot and data filtering
-              {tabPanel(
-                "Selection for Monte Carlo",
-                plotOutput("data_input_plot",
-                           width = "100%"),
-                
-                #Controls at the bottom of figure
-                fluidRow(
-                  
-                  #Column for selecting filters to display
-                  column(
-                    6,
-                    h2("Filter Selection"),
-                    p("The Monte Carlo simulatiion will automatically compare your
-                                  selected, experimental sample of data to random samples of all
-                                  your data. On this tab, you will need to select filters that
-                                  indicate your sample of interest."),
-                    p("Below, select the variables you want to include in the filter and,
-                      on the right, a list of values for that variable will appear."),
-                    
-                    #List to select grouping factor
-                    selectInput(
-                      "comparison_select",
-                      "Groupings for Monte Carlo",
-                      choices = c("None",col_descript),
-                      selected = "None",
-                      width = "100%"
-                    ),
-                    
-                    #Input for dynamic filter display
-                    checkboxGroupInput(
-                      "var_select",
-                      "Variables to include in filter",
-                      choices = setdiff(col_descript,"Responses"),
-                      width = "100%"
-                    ),
-                    div(actionButton("filter_update",
-                                 "Uppdate Filter"),
-                        style = "float: right;")
-                    ), 
-                  
-                  #Column for dynamic filter selection
-                  column(6,
-                         h2("Updating Filter Selection"),
-                         uiOutput(outputId = "var_filters")
-                         
-                         )#Column for adjusting inputs 
-                
-                  )#End of row with controls
-              
-                )},#End of panel for filters
-              
-              "Monte Carlo",
-              
-              #Panel for Monte Carlo
-              {tabPanel("Run Monte Carlo",
-                
-                actionButton("btn_run_MC",
-                             "Run Monte Carlo"),
-                
-                numericInput("MC_runs",
-                             "Number of Monte Carlo Simulations (0-1,000)",
-                             value = 500,
-                             min = 1,
-                             max = 1000),
-                
-                numericInput("MC_seed",
-                             "Set seed for randomize",
-                             value = sample.int(.Machine$integer.max,1),
-                             min = 1,
-                             max = .Machine$integer.max)
-                
-              )}, #Monte Carlo panel
-              
-              #MC output panel
-              {
-              tabPanel("Monte Carlo Output",
-                       
-                       #Plot of MC
-                       plotOutput("MC_out_plot",
-                                  width = "100%"),
-                       
-                       #MC Data output handler
-                       rHandsontableOutput("MC_out_table"),
-                       
-                       #Downloads
-                       downloadButton("download_MC_output",
-                                      "Download Output")
-                       
-                       )}
-              
-            )#Navlist Panel
             
   ) #End of fluidpage
 
@@ -249,342 +151,106 @@ ui =
 
 server = function(input, output, session) {
   
-  #Create ractive data for handsontable
-  curr_data = reactiveValues(data = BA_MC_data)
+  curr_data = reactiveValues()
   
-  #Create reactive data for filter
-  curr_filter = reactiveValues(data = NA)
-  
-  curr_MC_out = reactiveValues(data = MC_out)
-  
-  #Display plot of data for selecting filter
-  output$data_input_plot = renderPlot(expr = {
-    data_selection_plotter(
-      curr_data$data,
-      make_clean_names(input$behv_select),
-      make_clean_names(input$sess_select),
-      make_clean_names(input$sub_select),
-      curr_filter$data
-    )
+  #File upload
+  observe({
+    
+    req(input$new_file)
+    
+    temp_upload = read_csv(input$new_file$datapath, col_types = cols())
+    
+    mc_data$upload$col_names = colnames(temp_upload)
+    
+    mc_data$upload$data = temp_upload %>% clean_names()
+    
+    curr_data$data = mc_data$upload$data
+    curr_data$col_descript = mc_data$upload$col_names
+    
+      
   })
   
-  #Plotter currently relies fixed filter, needs to be fixed
-  output$MC_out_plot = renderPlot({
+  #Create reactive rhandsontable, special table if no data loaded
+  observe({
     
-    MC_out_plotter(MC_data = curr_MC_out$data,
-                   exp_data = exp_out_func(
-                     curr_data$data,
-                     "experimental_group",       
-                     MC_filter = tibble(
-                       condition = c("Reinstatement"),
-                       experimental_group = c("Sal_Sal", "Amp_Sal")) %>%
-                       expand(condition, experimental_group) %>%
-                       mutate(MC_include = "Include"),
-                     "log_responses"),
-                   MC_grouping = "experimental_group",
-                   MC_responses = "log_responses")
+    output$data_display = renderRHandsontable({
     
-  })
-  
-  #Initial render of input table
-  output$hot_curr_data = renderRHandsontable({
-    rhandsontable(curr_data$data,
-                  colHeaders = col_descript,
-                  height = 300) %>%
-      hot_cols(manualColumnResize = TRUE)
-  })
-  
-  #Temp render of precalculated output table
-  output$MC_out_table = renderRHandsontable({
-    rhandsontable(curr_MC_out$data, height = 300) %>%
-      hot_col("run",
-              format = "0")
-    })
-  
-  #Update data in table
-  observeEvent(input$update, {
-    curr_data$data = hot_to_r(input$hot_curr_data)
-    
-    #Update var select box
-    updateCheckboxGroupInput(
-      session,
-      "var_select",
-      choices = setdiff(col_descript,input$behv_select)
-    )
-    
-    #Rerender var list outcomes
-    #Probably will remove later
-    output$var_filters =
-      renderUI(#Loop through data columns
-        lapply(1:length(col_descript),
-               function(i) {
-                 if (!(col_descript[i] %in% c(input$behv_select))) {
-                   #Get list of items in the current filter
-                   curr_opts = BA_MC_data %>%
-                     pull(!!as.symbol(make_clean_names(col_descript[i]))) %>%
-                     unique()
-                   
-                   #create individual inputs
-                   checkboxGroupInput("input_i",
-                                      col_descript[i],
-                                      choices =  curr_opts,
-                                      selected = curr_opts[1:length(curr_opts)])
-                 }#If..then to skip over response rate
-               }))
-    
-    
-  })
-  
-  #Reload MC data
-  observeEvent(input$reset, {
-    #Reset data
-    curr_data$data = BA_MC_data
-    
-    #Relabel columns
-    col_descript = c(
-      "Condition",
-      "Session Number",
-      "Responses",
-      "Subject Number",
-      "Experimental Group"
-    )
-    #Rename columns
-    colnames(BA_MC_data) = col_descript
-    
-    #Render table
-    output$hot_curr_data = renderRHandsontable({
-      rhandsontable(curr_data$data,
-                    colHeaders = col_descript,
-                    height = 400) %>%
-        hot_cols(manualColumnResize = TRUE)
-
-      }) #Render table
-      
-    #$Update lists
-    {updateSelectInput(session,
-                      "col_rename_input",
-                      choices = col_descript)
-    
-    updateSelectInput(session,
-                      "behv_select",
-                      choices = col_descript,
-                      selected = "Responses")
-    
-    updateSelectInput(session,
-                      "sess_select",
-                      choices = col_descript,
-                      selected = "Session Number")
-    
-    updateSelectInput(session,
-                      "sub_select",
-                      choice = col_descript,
-                      selected = "Subject Number")
-    
-    updateSelectInput(session,
-                      "comparison_select",
-                      choices = c("None", col_descript),
-                      selected = "None")
-    
-    #Update MC Output
-    output$MC_out_table = 
-      renderRHandsontable({
-        rhandsontable(curr_MC_out$data, height = 300) %>%
-          hot_col("run",
-                  format = "0")
-      })
-    
-    }
-    
-  })
-  
-  #Rename columns
-  observeEvent(input$rename_button, {
-    old_column = input$col_rename_input
-    new_name = input$new_col_name
-    
-    if(new_name ==""){new_name = "x"}
-    
-    #Check if the name exists
-    if (sum(col_descript == new_name) > 0) {
-      new_name = paste0(new_name, 2)
-      
-    }
-    
-    col_descript[col_descript == old_column] <<-
-      new_name
-    # curr_cols$data = col_descript
-    
-    #clean new name
-    new_name = make_clean_names(new_name)
-    
-    #Change names in tibble
-    curr_data$data = curr_data$data %>%
-      rename(!!as.symbol(new_name) := !!as.symbol(make_clean_names(old_column)))
-    
-    #Re-render table with new names
-    output$hot_curr_data = renderRHandsontable({
-      rhandsontable(curr_data$data,
-                    colHeaders = col_descript,
-                    height = 400) %>%
-        hot_cols(manualColumnResize = TRUE)
-    })#Table render
-    
-    #Update lists
-    updateSelectInput(session,
-                      "col_rename_input",
-                      choices = col_descript)
-
-    updateSelectInput(session,
-                      "behv_select",
-                      choices = col_descript)
-
-    updateSelectInput(session,
-                      "sess_select",
-                      choices = col_descript)
-
-    updateSelectInput(session,
-                      "sub_select",
-                      choices = col_descript)
-
-    updateSelectInput(session,
-                      "comparison_select",
-                      choices = c("None", col_descript),
-                      selected = "None")
-
-    #Var list for filter
-    updateCheckboxGroupInput( session = session,
-                              inputId = "var_select",
-                              choices = setdiff(col_descript,input$behv_select)
-    )
-    
-    #Clear name
-    updateTextInput(session,
-                    "new_col_name",
-                    value = "")
-    
-
-    
-  })#Rename button
-  
-  observeEvent(input$filter_update,{
-    
-    #Check if var select contains anything (NOT SURE)
-    #req(input$var_select)
-    
-    #Create vector of currently included variables
-    input_list = c()
-    
-    output_list = list()
-
-    for(j in 1:length(input$var_select)){
-             
-              #Get current name and add to list of names
-             curr_input = make_clean_names(input$var_select[j])
-             input_list = c(input_list,curr_input)
-             
-             #If nothing is selected in the filter, exclude from list
-             if(length(input[[paste0("input_", curr_input)]]) != 0) {
-               output_list[[curr_input]] =
-                 input[[paste0("input_", curr_input)]]
-             }
-             
-           }#Internal loop function
-        
-       
-    #Check if the output list contains anything
-    if(length(output_list)!=0){
-      #Create included variable grid, add include
-         curr_filter$data = cross_df(output_list)%>%
-      mutate(data_color = "Include")
-    }else{
-      #If the list is empty, return NA
-      curr_filter$data = NA
-    }
-      
-    rm(curr_input,j, input_list)
-
-    
-  })#Filter update button
-  
-  observeEvent(input$btn_run_MC,{
-    
-    grouping_factor = make_clean_names(input$comparison_select)
-    
-    if(grouping_factor == "none"){grouping_factor=NA}
-    
-    
-    
-    runs = input$MC_runs
-    
-    #Reset bounds, just in case
-    if(runs < 1){runs = 1}
-    if(runs > 1000){runs = 1000}
-    
-    curr_seed = input$MC_seed  
-    
-    if(curr_seed < 1){curr_seed = 1}
-    if(curr_seed > .Machine$integer.max){curr_seed = .Machine$integer.max}
-      
-    #Run the MC
-    curr_MC_out$data = MC_func(MC_data = curr_data$data,
-            MC_responses = make_clean_names(input$behv_select),
-            MC_filter = curr_filter$data,
-            MC_grouping = grouping_factor,
-            MC_simulations = runs,
-            MC_seed = curr_seed)
-    
-    
-    rm(runs)
-  })
-  
-  #Creates a variable number of filters based on what data is included
-  {output$var_filters =
-    
-      #Combines: 
-      #https://stackoverflow.com/questions/45040598/issues-accessing-inputs-from-renderui-in-r-shiny
-      #https://stackoverflow.com/questions/51700437/dynamic-number-of-selectinput
-      
-      renderUI(
-      
-        if(length(input$var_select)==0){
-        
-        #Return blank if nothing is selected
-        return()
-        
+      if(is.null(curr_data$col_descript)){
+        rhandsontable(
+          tibble("Data Loaded" = "None")
+        )
       }else{
       
-      lapply(1:length(input$var_select),
-             function(i) {
-               if (!(input$var_select %in% c(input$behv_select))) {
-                 
-                 #Get list of items in the current filter
-                 curr_opts = curr_data$data %>%
-                   pull(!!as.symbol(make_clean_names(input$var_select[i]))) %>%
-                   unique()
-                 
-                 #create individual inputs
-                 checkboxGroupInput(
-                   paste0("input_",
-                          make_clean_names(input$var_select[i])),
-                   input$var_select[i],
-                   choices =  curr_opts,
-                   selected = "" #curr_opts[1:length(curr_opts)]
-                 )
-               }#If..then to skip over response rate
-             }) #lapply end
-        }#Else to include inputs
-      )}
-  
-  #Dataoutput handler
-  {
-  output$download_MC_output = downloadHandler(
-    
-    filename = "Monte Carlo Output.csv",
-    
-    content = function(file){
-      write_csv(curr_MC_out$data,file)
+      rhandsontable(curr_data$data,
+                    colHeaders = curr_data$col_descript) %>% 
+        hot_cols(manualColumnResize = TRUE,
+                 colWidths = 100)
       }
-  )}
+      
+    })
+    
+  })
+  
+  observe({
+    
+    input_list = c(
+      "behv_select",
+      "sess_select",
+      "sub_select",
+      "col_rename_input"
+    )
+    
+    for(input in input_list){
+      
+      updateSelectInput(session,
+                        input,
+                        choices = c("",curr_data$col_descript),
+                        select = "")
+      
+    }# Loop for inputs
+    
+  }) #observe for reactive select lists
+  
+  #Example data button
+  observeEvent(input$reset,{
+    
+    curr_data$data = mc_data$example$data
+    curr_data$col_descript = mc_data$example$col_names
+    
+  })
+  
+  #Rename column
+  observeEvent(input$rename_button,{
+    
+    #Require inputs
+    req(input$new_col_name,input$col_rename_input)
+    
+    #Create new variable, for ease
+    new_name = input$new_col_name
+    
+    #Get the col descript column to edit
+    curr_column = curr_data$col_descript==input$col_rename_input
+    
+    while_letter = 1
+    while(any(colnames(curr_data$data)==make_clean_names(new_name))){
+      
+      #Rename if 
+      new_name = paste0(new_name,LETTERS[while_letter])
+      
+    }
+    
+    rm(while_letter)
+    
+    curr_data$col_descript[curr_column] = new_name
+    
+    curr_data$data = curr_data$data %>%
+      rename(!!as.symbol(make_clean_names(new_name)) := !!as.symbol(make_clean_names(input$col_rename_input)))
+    
+    # #REmove this line, just for testing
+    curr_data$data
+    
+  })#Rename button
+
   
 }#Server function
 
