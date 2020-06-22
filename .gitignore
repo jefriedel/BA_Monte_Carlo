@@ -24,6 +24,7 @@
 
 # RStudio files
 .Rproj.user/
+.Rproj.user
 
 # produced vignettes
 vignettes/*.html
@@ -48,3 +49,4 @@ vignettes/*.pdf
 /*_files/
 
 # End of https://www.toptal.com/developers/gitignore/api/r
+BA Monte Carlo.Rproj

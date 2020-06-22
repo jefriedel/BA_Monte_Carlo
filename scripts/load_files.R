@@ -1,9 +1,6 @@
 library(tidyverse)
 library(janitor)
 
-
-setwd("./BA_Monte_Carlo/")
-
 relapse1  = read_csv("./data/Relapse Data 1.csv") %>%
   clean_names()
 
