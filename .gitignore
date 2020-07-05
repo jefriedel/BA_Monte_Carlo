@@ -50,3 +50,7 @@ vignettes/*.pdf
 
 # End of https://www.toptal.com/developers/gitignore/api/r
 BA Monte Carlo.Rproj
+desktop.ini
+data/desktop.ini
+scripts/desktop.ini
+desktop.ini
