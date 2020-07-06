@@ -140,7 +140,52 @@ ui =
                     
                     )#Cxtra column for spacing
                   )# End of input row
-                )} #End of modify
+                )}, #End of modify panel
+              
+              #Log proportion
+              {tabPanel(
+                p(tags$i("log")," Prop. Responding"),
+                
+                column(12,
+                h2(tags$i("log"), "Proportion Responding"),
+                
+                #Text should change based on article content
+                p("If you are planning on using a Monte Carlo simulation to examine either
+                  transient changes in behavior (sugh as a probe desgin) or whether there 
+                  is a trend in the data, then we recommend you look at ",
+                  tags$i("log"), "proportion responding."),
+                
+                p(tags$i("log"), "proportion responding as a measure is great for detecting changes
+                  in behavior. It provides you with a measure of behavior on session B as a proportion 
+                  of session A. By looking at the logarithm of the proportion, increases in behavior 
+                  have the same impact on our measure as decreases in behavior. For example, the
+                  standard celeration chart uses logrithms on the y-axis.")
+                
+                ),#Top with descriptions
+                
+                column(4,
+                       
+                       numericInput("log_base",
+                                    "Base for the logarithm",
+                                    value = 2,
+                                    min = 2,
+                                    step = 1),
+                       p("Click the following button to calculate the natural logarithm (base ", 
+                         tags$i("e).")),
+                       
+                       div(actionButton("base_e",
+                                    label= paste("Press for base e")),
+                                    style = "float: right;"),
+                       
+                       div(actionButton("log_prop_calc",
+                                        label = " Calculate",
+                                        icon = icon(name = "calculator", lib = "font-awesome")),
+                           style = "float: right;"
+                           )
+                       )
+                
+                
+              )}#Log proportion calculator
               
             )#Nav
 
@@ -251,6 +296,14 @@ server = function(input, output, session) {
     
   })#Rename button
 
+  #Log base e
+  observeEvent(input$base_e, {
+    
+    updateNumericInput(session = session,
+                       inputId = "log_base",
+                       value = round(exp(1),3))
+    
+  })
   
 }#Server function
 
