@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyjs)
 library(tidyverse)
 library(janitor)
 library(rhandsontable)
@@ -6,12 +7,14 @@ library(rhandsontable)
 options(shiny.reactlog = TRUE)
 
 source("./scripts/load_files.R")
+source("./scripts/helper_functions.R")
 
 { #Bracket for UI
 ui = 
-
     
   fluidPage(
+    
+    useShinyjs(),
     
     tags$head(
     tags$style(HTML("
@@ -135,7 +138,9 @@ ui =
                       textInput("new_col_name",
                                 "New Column Name", width = "100%"),
                       div(actionButton("rename_button",
-                                       "Rename"), style = "float: right;")
+                                       "Rename"), style = "float: right;"),
+                      helpText("If you manually rename columns, the app will 
+                               reset any other column selections you made.")
                     )}#End of rename column
                     
                     )#Cxtra column for spacing
@@ -197,6 +202,8 @@ ui =
 server = function(input, output, session) {
   
   curr_data = reactiveValues()
+  
+  cols_selected = reactiveVal(FALSE)
   
   #File upload
   observe({
@@ -302,6 +309,32 @@ server = function(input, output, session) {
     updateNumericInput(session = session,
                        inputId = "log_base",
                        value = round(exp(1),3))
+    
+  })
+  
+  observe({
+
+    cols_selected(
+      !(input$sess_select=="") &
+      !(input$sub_select=="") &
+      !(input$behv_select==""))
+
+    if (cols_selected()) {
+      enable("log_prop_calc")
+    } else{
+      disable("log_prop_calc")
+    }
+
+  })
+  
+  #Calculate log prop.
+  observeEvent(input$log_prop_calc,{
+    
+    curr_data = log_prop_calc(full_data = curr_data,
+                  responding = input$behv_select,
+                  sessions = input$sess_select,
+                  log_base = input$log_base,
+                  grouping = input$sub_select)
     
   })
   
