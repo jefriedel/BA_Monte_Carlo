@@ -203,7 +203,9 @@ server = function(input, output, session) {
   
   curr_data = reactiveValues()
   
-  cols_selected = reactiveVal(FALSE)
+  old_sess = ""
+  old_behv = ""
+  old_sub = ""
   
   #File upload
   observe({
@@ -243,6 +245,24 @@ server = function(input, output, session) {
     
   })
   
+  #Hide buttons       
+  observe({
+    
+    curr_data$sess = input$sess_select
+    curr_data$sub = input$sub_select
+    curr_data$behv = input$behv_select
+    
+    if (!(curr_data$behv=="") &
+        !(curr_data$sub=="") &
+        !(curr_data$sess=="")) {
+      enable("log_prop_calc")
+    } else{
+      disable("log_prop_calc")
+    }
+    
+  })
+  
+  
   observe({
     
     input_list = c(
@@ -254,12 +274,28 @@ server = function(input, output, session) {
     
     for(input in input_list){
       
-      updateSelectInput(session,
-                        input,
-                        choices = c("",curr_data$col_descript),
-                        select = "")
+      temp = str_split(input,"_")
+      
+      if (temp[[1]][2] == "select") {
+        
+        updateSelectInput(session,
+                          input,
+                          choices = c("", curr_data$col_descript),
+                          selected = eval(parse(text = paste0("curr_data$",
+                                                       temp[[1]][1])))
+                          )
+      }else{
+        
+        updateSelectInput(session,
+                          input,
+                          choices = c("", curr_data$col_descript),
+                          selected = "")
+        
+      }
       
     }# Loop for inputs
+    
+    rm(temp)
     
   }) #observe for reactive select lists
   
@@ -312,30 +348,18 @@ server = function(input, output, session) {
     
   })
   
-  observe({
 
-    cols_selected(
-      !(input$sess_select=="") &
-      !(input$sub_select=="") &
-      !(input$behv_select==""))
-
-    if (cols_selected()) {
-      enable("log_prop_calc")
-    } else{
-      disable("log_prop_calc")
-    }
-
-  })
   
   #Calculate log prop.
   observeEvent(input$log_prop_calc,{
+  
     
     curr_data = log_prop_calc(full_data = curr_data,
-                  responding = input$behv_select,
-                  sessions = input$sess_select,
+                  responding = curr_data$behv,
+                  sessions = curr_data$sess,
                   log_base = input$log_base,
-                  grouping = input$sub_select)
-    
+                  grouping = curr_data$sub)
+
   })
   
 }#Server function

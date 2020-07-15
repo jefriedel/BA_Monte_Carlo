@@ -47,6 +47,8 @@ log_prop_calc = function(full_data,
   
   full_data$col_descript = c(full_data$col_descript, col_name)
   
+  full_data$behv = col_name
+  
   return(full_data)
 }
 #Function for plotting input/filtering----
