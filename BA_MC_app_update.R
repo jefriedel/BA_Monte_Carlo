@@ -178,19 +178,61 @@ ui =
                        p("Click the following button to calculate the natural logarithm (base ", 
                          tags$i("e).")),
                        
-                       div(actionButton("base_e",
-                                    label= paste("Press for base e")),
-                                    style = "float: right;"),
+                       fluidRow(div(p(actionButton("base_e",
+                                    label= paste("Press for base e"))),
+                                    style = "float: right;")),
+                       
+                       div(("The \"Calculate\" button below will add the log proportion responding.
+                       A few rows of the result will be displayed to the right for inspection. The full
+                       set of values can be seen in the data table on the \"View & Modify\" panel.")),
                        
                        div(actionButton("log_prop_calc",
                                         label = " Calculate",
                                         icon = icon(name = "calculator", lib = "font-awesome")),
                            style = "float: right;"
                            )
-                       )
+                       ),
+                column(8,
+                       tableOutput("log_prop_display"))
                 
                 
-              )}#Log proportion calculator
+              )},#Log proportion calculator
+              
+              #Sample Selection
+              {tabPanel(
+                "Sample Selection",
+                h2("Sample Selection"),
+                p("The app can not inherently distinguish between the \"real\" sample
+                and the rest of the data. On this panel, you must use the inputs to filter
+                the data so that only \"real\" sample is highlighted. If you have selected the
+                column indicators on the \"View & Modify\" panel then a simple figure will
+                  be displayed below. The data you have selected for including in 
+                  the \"real\" sample will be highlighted as you update the filters."),
+                
+                column(12,
+                       plotOutput("filter_plot",
+                                  width = "100%",
+                                  height = "400px")),
+                fluidRow(
+                  
+                  #Filter setup
+                  column(6,
+                         
+                         selectizeInput("test_selectize",
+                                        label = "Testing Filters",
+                                        choices = NULL,
+                                        multiple = TRUE
+                                        )
+                         
+                         )#Setup column
+                )#Filters row
+                
+
+                
+              )#Sample selection panel
+                
+              }#Sample selection
+              
               
             )#Nav
 
@@ -348,8 +390,6 @@ server = function(input, output, session) {
     
   })
   
-
-  
   #Calculate log prop.
   observeEvent(input$log_prop_calc,{
   
@@ -359,8 +399,60 @@ server = function(input, output, session) {
                   sessions = curr_data$sess,
                   log_base = input$log_base,
                   grouping = curr_data$sub)
+    
+    subs = curr_data$data %>% 
+      pull(!!as.symbol(make_clean_names(curr_data$sub))) %>%
+      unique() 
+    
+    if(NROW(subs)>3){
+      subs = subs[1:3]
+    }
+    
+    subs = 
+      curr_data$data %>% 
+      filter(!!as.symbol(make_clean_names(curr_data$sub)) %in% subs) %>%
+      group_by(!!as.symbol(make_clean_names(curr_data$sub))) %>%
+      slice(1:4) %>% 
+      select(!!as.symbol(make_clean_names(curr_data$sub)),
+             !!as.symbol(make_clean_names(curr_data$sess)),
+             !!as.symbol(make_clean_names(input$behv_select)),
+             log_prop_resp)
+        
+    colnames(subs) = c(curr_data$sub,
+                       curr_data$sess,
+                       input$behv_select,
+                       "log Prob. Resp.")
+    
+    output$log_prop_display = renderTable(
+
+      subs    
+      
+    )
 
   })
+  
+  output$filter_plot = renderPlot({
+    
+    ggplot(curr_data$data,
+           aes(x = !!as.symbol(make_clean_names(curr_data$sess)),
+               y = !!as.symbol(make_clean_names(curr_data$behv)))) +
+      facet_wrap(vars(!!as.symbol(make_clean_names(curr_data$sub)))) + 
+      geom_point() + 
+      geom_line()
+    
+  })
+  
+  observe({
+    
+    updateSelectizeInput(session = session,
+                         inputId = "test_selectize",
+                         choices = mc_data$example$data %>%
+                           pull(subject)%>%
+                           unique(),
+                         server = TRUE)
+    
+  })
+  
   
 }#Server function
 
