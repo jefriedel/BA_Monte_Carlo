@@ -53,21 +53,23 @@ log_prop_calc = function(full_data,
 }
 #Function for plotting input/filtering----
 
-# #Data for testing plotting function
-# figure_data = BA_MC_data
-# resp_col = "responses"
-# sessions_col = "session_number"
-# subject_col = "subject_number"
-# 
-# color_criteria =
-# tibble(condition = c("Baseline","Extinction"),
-#        experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-#   expand(condition, experimental_group) %>%
-#   mutate(data_color = "Include")
-# 
-# #Colors for plotting
-# inc_colors = c("red","black")
-# names(inc_colors) = c("Include","Exclude")
+#Data for testing plotting function
+figure_data = mc_data$example$data
+resp_col = "Responses"
+sessions_col = "Session"
+subject_col = "Subject"
+
+color_criteria = NA
+
+filter_criteria =
+tibble(condition = c("Baseline","Extinction"),
+       experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+  expand(condition, experimental_group) %>%
+  mutate(data_color = "Include")
+
+#Colors for plotting
+inc_colors = c("red","black")
+names(inc_colors) = c("Include","Exclude")
 # 
 # data_selection_plotter(figure_data = figure_data,
 #                        resp_col = resp_col,
@@ -81,34 +83,36 @@ log_prop_calc = function(full_data,
 #                                   subject_col,
 #                                   color_criteria = NA){
 #   
-#   #Join inclusion figure to data
-#   if(is.na(color_criteria)) {
-#     
-#     #If there is no filter, exclude everything
-#     figure_data = figure_data %>%
-#       mutate(data_color = "Exclude")
-#   } else{
-#     
-#     #Add include to what is included in the filter
-#     figure_data = left_join(figure_data,
-#               color_criteria) %>%
-#       
-#       #Exclude everything not on include
-#       replace_na(list(data_color = "Exclude"))
-#     
-#   }
-#   
-#   #Plot
-#   ggplot(figure_data,aes(x = !!as.symbol(sessions_col),
-#                        y = !!as.symbol(resp_col))) +
-#   theme_classic() +
-#   geom_line() + 
-#     geom_point(aes(color = data_color))+
-#     scale_color_manual(values = inc_colors) +
-#   facet_wrap(vars(!!as.symbol(subject_col))) +
-#   xlab("Session Number") + 
-#   ylab("Responding")
-#   
+  #Join inclusion figure to data
+  if(is.na(color_criteria)) {
+
+    #If there is no filter, exclude everything
+    figure_data = figure_data %>%
+      mutate(data_color = "Exclude")
+  } else{
+
+    #Add include to what is included in the filter
+    figure_data = left_join(figure_data,
+              color_criteria) %>%
+
+      #Exclude everything not on include
+      replace_na(list(data_color = "Exclude"))
+
+  }
+
+  #Plot
+  ggplot(figure_data,aes(x = !!as.symbol(make_clean_names(sessions_col)),
+                       y = !!as.symbol(make_clean_names(resp_col)))) +
+  theme_classic() +
+  geom_line() +
+    geom_point(aes(color = data_color))+
+    scale_color_manual(values = inc_colors) +
+  facet_wrap(vars(!!as.symbol(make_clean_names((subject_col))))) +
+  xlab(sessions_col) +
+  ylab(resp_col) + 
+    theme(legend.position = "none")
+  
+
 # }
 # 
 # 

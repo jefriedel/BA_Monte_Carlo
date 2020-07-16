@@ -218,13 +218,21 @@ ui =
                   #Filter setup
                   column(6,
                          
-                         selectizeInput("test_selectize",
-                                        label = "Testing Filters",
-                                        choices = NULL,
-                                        multiple = TRUE
-                                        )
+                         helpText("Select a grouping factor if you want different Monte Carlo
+                                  analyses based on that grouping. If no grouping factor is 
+                                  selected, ")
                          
-                         )#Setup column
+                         selectInput(inputId = "group_select",
+                                     label = "Select grouping factor",
+                                     choices = NULL,
+                                     width = "100%")
+                         
+                         ),#Setup column
+                  
+                  column(6,
+                         
+                         uiOutput(outputId = "var_filters")) #Var list column
+                  
                 )#Filters row
                 
 
@@ -233,10 +241,8 @@ ui =
                 
               }#Sample selection
               
-              
             )#Nav
 
-            
   ) #End of fluidpage
 
 }#UI            
@@ -304,14 +310,14 @@ server = function(input, output, session) {
     
   })
   
-  
   observe({
     
     input_list = c(
       "behv_select",
       "sess_select",
       "sub_select",
-      "col_rename_input"
+      "col_rename_input",
+      "group_select"
     )
     
     for(input in input_list){
@@ -433,25 +439,45 @@ server = function(input, output, session) {
   
   output$filter_plot = renderPlot({
     
-    ggplot(curr_data$data,
-           aes(x = !!as.symbol(make_clean_names(curr_data$sess)),
-               y = !!as.symbol(make_clean_names(curr_data$behv)))) +
-      facet_wrap(vars(!!as.symbol(make_clean_names(curr_data$sub)))) + 
-      geom_point() + 
-      geom_line()
+    # ggplot(curr_data$data,
+    #        aes(x = !!as.symbol(make_clean_names(curr_data$sess)),
+    #            y = !!as.symbol(make_clean_names(curr_data$behv)))) +
+    #   facet_wrap(vars(!!as.symbol(make_clean_names(curr_data$sub)))) + 
+    #   geom_point() + 
+    #   geom_line()
     
   })
   
-  observe({
+  #Section for filter lists
+  {
     
-    updateSelectizeInput(session = session,
-                         inputId = "test_selectize",
-                         choices = mc_data$example$data %>%
-                           pull(subject)%>%
-                           unique(),
-                         server = TRUE)
+    #Combines: 
+    #https://stackoverflow.com/questions/45040598/issues-accessing-inputs-from-renderui-in-r-shiny
+    #https://stackoverflow.com/questions/51700437/dynamic-number-of-selectinput
     
-  })
+    output$var_filters =
+      renderUI(#Loop through data columns
+        lapply(1:length(curr_data$col_descript),
+               function(i) {
+                 if (!(curr_data$col_descript[i] %in% c(input$behv_select))) {
+                   #Get list of items in the current filter
+                   curr_opts = curr_data$data %>%
+                     arrange(!!as.symbol(make_clean_names(curr_data$col_descript[i]))) %>%
+                     pull(!!as.symbol(make_clean_names(curr_data$col_descript[i]))) %>%
+                     unique()
+                   
+                   #create individual inputs
+                   selectizeInput(
+                     inputId = paste0("filter_", curr_data$col_descript[i]),
+                     curr_data$col_descript[i],
+                     choices =  curr_opts,
+                     selected = NULL,
+                     multiple = TRUE)
+                 }#If..then to skip over response rate
+               }))
+    
+  }
+  
   
   
 }#Server function
