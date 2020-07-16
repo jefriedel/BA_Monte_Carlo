@@ -1,75 +1,78 @@
-#Function to calc log prop----
+# #Function to calc log prop----
+# # 
+# # full_data = list()
+# # full_data$data = mc_data$example$data
+# # full_data$col_descript = mc_data$example$col_names
+# # log_base = 2
+# # grouping = "Subject"
+# # responding = "Responses"
+# # sessions = "Session"
+# # 
+# # full_data2 = full_data
+# # log_base2 = 2
+# # grouping2 = "Subject"
+# # responding2 = "Responses"
+# # sessions2 = sessions
+# # 
+# # log_prop_calc(full_data2,
+# #               responding2,
+# #               log_base2,
+# #               grouping2,
+# #               sessions2)
 # 
-# full_data = list()
-# full_data$data = mc_data$example$data
-# full_data$col_descript = mc_data$example$col_names
-# log_base = 2
-# grouping = "Subject"
-# responding = "Responses"
-# sessions = "Session"
+# log_prop_calc = function(full_data,
+#                          responding,
+#                          sessions,
+#                          log_base = 2,
+#                          grouping = NA) {
+#   responding = as.symbol(make_clean_names(responding))
+#   sessions = as.symbol(make_clean_names(sessions))
+#   
+#   if (!is.na(grouping)) {
+#     grouping = as.symbol(make_clean_names(grouping))
+#     
+#     full_data$data = full_data$data %>%
+#       group_by(!!grouping)
+#   }
+#   
+#   col_name = "log Prop. Resp."
+#   
+#   full_data$data = full_data$data %>%
+#     arrange(!!sessions) %>%
+#     mutate(!!as.symbol(make_clean_names(col_name)) :=
+#              logb(!!responding / lag(!!responding),
+#                   base = log_base)) %>%
+#     ungroup() %>%
+#     arrange(!!grouping)
+#   
+#   full_data$col_descript = c(full_data$col_descript, col_name)
+#   
+#   full_data$behv = col_name
+#   
+#   return(full_data)
+# }
+# #Function for plotting input/filtering----
 # 
-# full_data2 = full_data
-# log_base2 = 2
-# grouping2 = "Subject"
-# responding2 = "Responses"
-# sessions2 = sessions
+# #Data for testing plotting function
+# figure_data = mc_data$example$data
+# resp_col = "Responses"
+# sessions_col = "Session"
+# subject_col = "Subject"
 # 
-# log_prop_calc(full_data2,
-#               responding2,
-#               log_base2,
-#               grouping2,
-#               sessions2)
+# filter_criteria =
+#   tibble(condition = c("Baseline","Extinction"),
+#          experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, experimental_group) %>%
+#   mutate(data_color = "Include")
+# 
+# color_criteria = NA
+# 
+# color_criteria = curr_data$filter
+# 
+# #Colors for plotting
+# inc_colors = c("red","black")
+# names(inc_colors) = c("Include","Exclude")
 
-log_prop_calc = function(full_data,
-                         responding,
-                         sessions,
-                         log_base = 2,
-                         grouping = NA) {
-  responding = as.symbol(make_clean_names(responding))
-  sessions = as.symbol(make_clean_names(sessions))
-  
-  if (!is.na(grouping)) {
-    grouping = as.symbol(make_clean_names(grouping))
-    
-    full_data$data = full_data$data %>%
-      group_by(!!grouping)
-  }
-  
-  col_name = "log Prop. Resp."
-  
-  full_data$data = full_data$data %>%
-    arrange(!!sessions) %>%
-    mutate(!!as.symbol(make_clean_names(col_name)) :=
-             logb(!!responding / lag(!!responding),
-                  base = log_base)) %>%
-    ungroup() %>%
-    arrange(!!grouping)
-  
-  full_data$col_descript = c(full_data$col_descript, col_name)
-  
-  full_data$behv = col_name
-  
-  return(full_data)
-}
-#Function for plotting input/filtering----
-
-#Data for testing plotting function
-figure_data = mc_data$example$data
-resp_col = "Responses"
-sessions_col = "Session"
-subject_col = "Subject"
-
-color_criteria = NA
-
-filter_criteria =
-tibble(condition = c("Baseline","Extinction"),
-       experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-  expand(condition, experimental_group) %>%
-  mutate(data_color = "Include")
-
-#Colors for plotting
-inc_colors = c("red","black")
-names(inc_colors) = c("Include","Exclude")
 # 
 # data_selection_plotter(figure_data = figure_data,
 #                        resp_col = resp_col,
@@ -77,12 +80,12 @@ names(inc_colors) = c("Include","Exclude")
 #                        subject_col = subject_col)
 
 # #Function to plot data for seleecting filter
-# data_selection_plotter = function(figure_data,
-#                                   resp_col,
-#                                   sessions_col,
-#                                   subject_col,
-#                                   color_criteria = NA){
-#   
+data_selection_plotter = function(figure_data,
+                                  resp_col,
+                                  sessions_col,
+                                  subject_col,
+                                  color_criteria = NA){
+
   #Join inclusion figure to data
   if(is.na(color_criteria)) {
 
@@ -113,7 +116,7 @@ names(inc_colors) = c("Include","Exclude")
     theme(legend.position = "none")
   
 
-# }
+}
 # 
 # 
 # #Function for MC simulations----

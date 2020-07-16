@@ -220,7 +220,7 @@ ui =
                          
                          helpText("Select a grouping factor if you want different Monte Carlo
                                   analyses based on that grouping. If no grouping factor is 
-                                  selected, ")
+                                  selected, "),
                          
                          selectInput(inputId = "group_select",
                                      label = "Select grouping factor",
@@ -230,12 +230,18 @@ ui =
                          ),#Setup column
                   
                   column(6,
+                         fluidRow(div(actionButton(inputId = "filter_update",
+                                          label = "Update Filter",
+                                          icon = icon(name = "filter", lib = "font-awesome")),
+                             style = "float: right; margin-right: 10px;")),
+                         
+                         helpText("Use the boxes below to select filters for the data you want included in your
+                                  \"real\" sample. Click on the button above to update the filter,
+                                  which will highlight the data in the plot."),
                          
                          uiOutput(outputId = "var_filters")) #Var list column
                   
                 )#Filters row
-                
-
                 
               )#Sample selection panel
                 
@@ -250,6 +256,8 @@ ui =
 server = function(input, output, session) {
   
   curr_data = reactiveValues()
+  
+  curr_data$filter = NA
   
   old_sess = ""
   old_behv = ""
@@ -439,24 +447,34 @@ server = function(input, output, session) {
   
   output$filter_plot = renderPlot({
     
-    # ggplot(curr_data$data,
-    #        aes(x = !!as.symbol(make_clean_names(curr_data$sess)),
-    #            y = !!as.symbol(make_clean_names(curr_data$behv)))) +
-    #   facet_wrap(vars(!!as.symbol(make_clean_names(curr_data$sub)))) + 
-    #   geom_point() + 
-    #   geom_line()
+    validate(need(
+      !is.null(curr_data$data),
+      "Please select data to display plot."
+    ))
+    
+    data_selection_plotter(curr_data$data,
+                           curr_data$behv,
+                           curr_data$sess,
+                           curr_data$sub,
+                           curr_data$filter)
     
   })
   
   #Section for filter lists
   {
-    
-    #Combines: 
+    #Combines:
     #https://stackoverflow.com/questions/45040598/issues-accessing-inputs-from-renderui-in-r-shiny
     #https://stackoverflow.com/questions/51700437/dynamic-number-of-selectinput
     
-    output$var_filters =
-      renderUI(#Loop through data columns
+    output$var_filters = 
+      
+      renderUI({#Loop through data columns
+        
+        validate(need(
+          !is.null(curr_data$data),
+          "Please select data to display filters"
+        ))
+        
         lapply(1:length(curr_data$col_descript),
                function(i) {
                  if (!(curr_data$col_descript[i] %in% c(input$behv_select))) {
@@ -468,17 +486,56 @@ server = function(input, output, session) {
                    
                    #create individual inputs
                    selectizeInput(
-                     inputId = paste0("filter_", curr_data$col_descript[i]),
+                     inputId = paste0("filter_", make_clean_names(curr_data$col_descript[i])),
                      curr_data$col_descript[i],
                      choices =  curr_opts,
                      selected = NULL,
-                     multiple = TRUE)
+                     multiple = TRUE
+                   )
                  }#If..then to skip over response rate
-               }))
+               })
+        }) #render UI
+  } # Full brace
+  
+  #Attempt to update filters
+  
+  
+observeEvent(input$filter_update,{
     
-  }
-  
-  
+    if(!is.null(curr_data$data)){
+      
+      input_list = c()
+      output_list = list()
+      
+      for(j in 1:length(curr_data$col_descript)){
+        
+        #Get current name and add to list of names
+        curr_input = make_clean_names(curr_data$col_descript[j])
+        input_list = c(input_list,curr_input)
+        
+        #If nothing is selected in the filter, exclude from list
+        if(length(input[[paste0("filter_", curr_input)]]) != 0) {
+          output_list[[curr_input]] =
+            input[[paste0("filter_", curr_input)]]
+        }
+        
+
+        
+        }#Internal loop function
+      
+      #Check if the output list contains anything
+      if(length(output_list)!=0){
+        #Create included variable grid, add include
+        curr_data$filter = cross_df(output_list)%>%
+          mutate(data_color = "Include")
+      }else{
+        #If the list is empty, return NA
+        curr_data$filter = NA
+      }
+      
+    }#check if data exists
+    
+  })#Full observe
   
 }#Server function
 
