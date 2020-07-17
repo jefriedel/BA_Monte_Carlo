@@ -84,8 +84,15 @@ data_selection_plotter = function(figure_data,
                                   resp_col,
                                   sessions_col,
                                   subject_col,
-                                  color_criteria = NA){
+                                  color_criteria = NA,
+                                  inc_colors = NULL){
 
+  #Colors for plotting
+  if (is.null(inc_colors)) {
+    inc_colors = c("red", "black")
+    names(inc_colors) = c("Include", "Exclude")
+  }
+  
   #Join inclusion figure to data
   if(is.na(color_criteria)) {
 
@@ -117,152 +124,163 @@ data_selection_plotter = function(figure_data,
   
 
 }
+
+
+#Function for MC simulations----
+# #Variables for testing build
+# MC_data = mc_data$example$data
+# 
+# MC_filter = tibble(condition = c("Reinstatement"),
+#                    group = c("Sal_Sal","Amp_Sal")) %>%
+#   expand(condition, group) %>%
+#   mutate(MC_include = "Include")
+# 
+# MC_grouping = "Group"
+# 
+# MC_responses = "responses"
 # 
 # 
-# #Function for MC simulations----
-# # #Variables for testing build
-# # MC_data = BA_MC_data %>%
-# #   group_by(subject_number) %>%
-# #   mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
-# #   ungroup()
-# # 
-# # MC_filter = tibble(condition = c("Reinstatement"),
-# #                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-# #   expand(condition, experimental_group) %>%
-# #   mutate(MC_include = "Include")
-# # 
-# # MC_grouping = "experimental_group"
-# # 
-# # MC_responses = "log_responses"
-# # 
-# # 
-# # MC_simulations = 1000
-# # MC_seed = 1
-# 
-# other_filter = tibble(med_change = TRUE, MC_include = "Include")
-# 
-# MC_out = MC_func(
-#   MC_data = other_data,
-#   MC_responses = "log_behv",
-#   MC_filter = other_filter,
-#   MC_grouping = NA,
-#   MC_simulations = 1000,
-#   MC_seed = 1
-# )
-# 
-# MC_data = other_data
-# MC_responses = "log_behv"
-# MC_filter = other_filter
-# MC_grouping = NA
-# MC_simulations = 1000
+# MC_simulations = 500
 # MC_seed = 1
 # 
-# MC_func = function(MC_data,
-#                    MC_responses,
-#                    MC_filter,
-#                    MC_grouping,
-#                    MC_simulations,
-#                    MC_seed) {
+# # other_filter = tibble(med_change = TRUE, MC_include = "Include")
+# # 
+# # MC_out = MC_func(
+# #   MC_data = other_data,
+# #   MC_responses = "log_behv",
+# #   MC_filter = other_filter,
+# #   MC_grouping = NA,
+# #   MC_simulations = 1000,
+# #   MC_seed = 1
+# # # )
+# # 
 # 
-# #Turn in symbol so don't have to do it repeatedly
-# MC_responses = as.symbol(MC_responses)
+# MC_data2 = MC_data
+# MC_responses2 = MC_responses
+# MC_filter2 = MC_filter
+# MC_grouping2 = MC_grouping
+# MC_simulations2 = 1000
+# MC_seed2 = 1
 # 
-# MC_data = MC_data %>% ungroup()
-# 
-# if(is.na(MC_grouping)){
-#   
-#   #If there is no grouping factor, create one with no groups
-#   MC_data = MC_data %>% mutate(grouping = "None")
-#   MC_grouping = "grouping"
-#   
-# }
-#   
-# MC_grouping = as.symbol(MC_grouping)
-# 
-# 
-# if(is.na(MC_filter)) {
-#   #If there is no MC_filter, don't run
-#   
-#   MC_data = MC_data %>%
-#     mutate(MC_include = "Include")
-#   
-# } else{
-#   
-#   #Add include to what is included in the filter
-#   MC_data = left_join(MC_data,
-#                       MC_filter) %>%
-#     
-#     #Exclude everything not on include
-#     replace_na(list(MC_include = "Exclude"))
-# }  
-#   # #Means, SDs, counts for each group
-#   exp_data = MC_data %>%
-#     filter(MC_include=="Include") %>%
-#     group_by(!!MC_grouping) %>%
-#     summarize(mean = mean(!!MC_responses,
-#                           na.rm = TRUE),
-#               sd = sd(!!MC_responses,
-#                       na.rm=TRUE),
-#               sample_size = n())
-# 
-#   #Create sim_data for looping
-#   sim_data = tibble()
-#   
-#   set.seed(MC_seed)
-#   
-#   curr_group = (exp_data %>% pull(!!MC_grouping))
-#   curr_group = curr_group[1]
-# 
-#   sim = 1
-#     
-#   for(curr_group in (exp_data %>% pull(!!MC_grouping))) {
-#     #Filter the data once, to avoid repetitive filtering
-#     filtered_MC =
-#       MC_data %>%
-#       filter(!!MC_grouping == curr_group)
-#     
-#     curr_size = exp_data %>%
-#       filter(!!MC_grouping == curr_group) %>%
-#       pull(sample_size)
-#     
-#     for (sim in 1:MC_simulations) {
-#       
-#       
-#       sim_data = bind_rows(
-#         sim_data,
-#         filtered_MC %>%
-#           sample_n(size = curr_size,
-#                    replace = TRUE) %>%
-#           group_by(!!MC_grouping) %>%
-#           summarize(
-#             mean = mean(!!MC_responses,
-#                         na.rm = TRUE),
-#             sd = sd(!!MC_responses,
-#                     na.rm = TRUE),
-#             MC_samp = (n())
-#           ) %>%
-#           mutate(run = sim)
-#       )
-#       
-#       
-#     } # Loop for current simulation
-#     
-#     #Remove to clear out memory
-#     rm(filtered_MC)
-#     
-#   } #Loop for current group
-#   
-#   return(sim_data)
-#   
-# #If then to ensure that there is filtered data
-# 
-# 
-# #Tictoc on 1000 is ~2 seconds, 10,000 is ~20 seconds (as predicted)
-# #Tictoc was only run in local. To save server time. Limit app to 1000.
-# 
-#  } #Brace for end of MC function
-# 
-# 
+# MC_func(MC_data = MC_data2,
+#         MC_responses = MC_responses2,
+#         MC_filter = MC_filter2,
+#         MC_grouping = MC_grouping2,
+#         MC_simulations = MC_simulations2,
+#         MC_seed = MC_seed2)
+
+MC_func = function(MC_data,
+                   MC_responses,
+                   MC_filter = NA,
+                   MC_grouping = NA,
+                   MC_simulations = 500,
+                   MC_seed = 1) {
+
+#Turn in symbol so don't have to do it repeatedly
+MC_responses = as.symbol(make_clean_names(MC_responses))
+
+MC_data = MC_data %>% ungroup()
+
+if(is.na(MC_grouping)){
+
+  #If there is no grouping factor, create one with no groups
+  MC_data = MC_data %>% mutate(grouping = "None")
+  MC_grouping = "grouping"
+
+}
+
+MC_grouping = as.symbol(make_clean_names(MC_grouping))
+
+
+if(is.na(MC_filter)) {
+  #If there is no MC_filter, don't run
+
+  MC_data = MC_data %>%
+    mutate(MC_include = "Include")
+
+} else{
+
+  #Add include to what is included in the filter
+  MC_data = left_join(MC_data,
+                      MC_filter) %>%
+
+    #Exclude everything not on include
+    replace_na(list(MC_include = "Exclude"))
+}
+
+  # #Means, SDs, counts for each group
+  exp_data = MC_data %>%
+    filter(MC_include=="Include") %>%
+    group_by(!!MC_grouping) %>%
+    summarize(mean = mean(!!MC_responses,
+                          na.rm = TRUE),
+              sd = sd(!!MC_responses,
+                      na.rm=TRUE),
+              sample_size = n())
+
+  #Create sim_data for looping
+  sim_data = tibble()
+
+  set.seed(MC_seed)
+
+  curr_group = (exp_data %>% pull(!!MC_grouping))
+  curr_group = curr_group[1]
+
+  sim = 1
+
+  for(curr_group in (exp_data %>% pull(!!MC_grouping))) {
+    #Filter the data once, to avoid repetitive filtering
+    filtered_MC =
+      MC_data %>%
+      filter(!!MC_grouping == curr_group)
+
+    curr_size = exp_data %>%
+      filter(!!MC_grouping == curr_group) %>%
+      pull(sample_size)
+
+    for (sim in 1:MC_simulations) {
+
+
+      sim_data = bind_rows(
+        sim_data,
+        filtered_MC %>%
+          sample_n(size = curr_size,
+                   replace = TRUE) %>%
+          group_by(!!MC_grouping) %>%
+          summarize(
+            mean = mean(!!MC_responses,
+                        na.rm = TRUE),
+            sd = sd(!!MC_responses,
+                    na.rm = TRUE),
+            MC_samp = (n())
+          ) %>%
+          mutate(run = sim)
+      )
+
+
+    } # Loop for current simulation
+
+    #Remove to clear out memory
+    rm(filtered_MC)
+
+  } #Loop for current group
+
+  mc_output = list()
+  
+  mc_output$sim_data = sim_data
+  mc_output$exp_data = exp_data
+  
+  return(mc_output)
+
+#If then to ensure that there is filtered data
+
+
+#Tictoc on 1000 is ~2 seconds, 10,000 is ~20 seconds (as predicted)
+#Tictoc was only run in local. To save server time. Limit app to 1000.
+
+ } #Brace for end of MC function
+
+
 # 
 # # MC_data2 = BA_MC_data %>%
 # #   group_by(subject_number) %>%

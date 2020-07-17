@@ -220,7 +220,7 @@ ui =
                          
                          helpText("Select a grouping factor if you want different Monte Carlo
                                   analyses based on that grouping. If no grouping factor is 
-                                  selected, "),
+                                  selected, then there will be only one sample."),
                          
                          selectInput(inputId = "group_select",
                                      label = "Select grouping factor",
@@ -230,22 +230,36 @@ ui =
                          ),#Setup column
                   
                   column(6,
-                         fluidRow(div(actionButton(inputId = "filter_update",
-                                          label = "Update Filter",
-                                          icon = icon(name = "filter", lib = "font-awesome")),
-                             style = "float: right; margin-right: 10px;")),
                          
                          helpText("Use the boxes below to select filters for the data you want included in your
-                                  \"real\" sample. Click on the button above to update the filter,
-                                  which will highlight the data in the plot."),
+                                  \"real\" sample. When completed, click he \"Update Filter\" button below,
+                                  which will highlight the selected data in the plot."),
                          
-                         uiOutput(outputId = "var_filters")) #Var list column
+                         uiOutput(outputId = "var_filters"),
+                         
+                         fluidRow(div(actionButton(inputId = "filter_update",
+                                                   label = "Update Filter",
+                                                   icon = icon(name = "filter", lib = "font-awesome")),
+                                      style = "float: right; margin-right: 10px;"))) #Var list column
                   
                 )#Filters row
                 
               )#Sample selection panel
                 
-              }#Sample selection
+              },#Sample selection
+              
+              "Monte Carlo",
+              
+              #Start MC
+              {tabPanel(
+                "Run Monte Carlo",
+                
+                actionButton(inputId = "run_MC",
+                             "Run Monte Carlo Simulation")
+                
+                
+                
+              )}#Start MC panel
               
             )#Nav
 
@@ -448,7 +462,10 @@ server = function(input, output, session) {
   output$filter_plot = renderPlot({
     
     validate(need(
-      !is.null(curr_data$data),
+      (!is.null(curr_data$data) &
+         curr_data$behv !="" &
+         curr_data$sess != "" &
+         curr_data$sub != ""),
       "Please select data to display plot."
     ))
     
@@ -499,7 +516,6 @@ server = function(input, output, session) {
   
   #Attempt to update filters
   
-  
 observeEvent(input$filter_update,{
     
     if(!is.null(curr_data$data)){
@@ -536,6 +552,21 @@ observeEvent(input$filter_update,{
     }#check if data exists
     
   })#Full observe
+
+observeEvent(input$run_MC,{
+  
+  print("temp")
+  
+  
+  #NEED TO HANDLE GROUPING
+  MC_func(MC_data = curr_data$data,
+          MC_responses = curr_data$behv,
+          MC_filter = curr_data$filter,
+          MC_grouping = NA,
+          MC_simulations = 500,
+          MC_seed = 1)
+  
+})
   
 }#Server function
 
