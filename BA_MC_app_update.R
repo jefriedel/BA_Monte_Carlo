@@ -253,9 +253,22 @@ ui =
               #Start MC
               {tabPanel(
                 "Run Monte Carlo",
-                
-                actionButton(inputId = "run_MC",
-                             "Run Monte Carlo Simulation")
+                h2("Run Monte Carlo"),
+                fluidRow(column(12,
+                  p("To run the Monte Carlo simulation, you must:"),
+                  tags$ul(tags$li("Upload data on the \"Import\" tab."),
+                          tags$li("Indicate the columns that hold behavior, sessions, and
+                                  participant/subject numbers on the \"View & Modify\" tab."),
+                          tags$li("Select a filter on the \"Sample Selection\" tab.")),
+                  
+                  p("After you run a simulation, a plot will be displayed below with different panels
+                  for each group (if there were any groups). The red line on the panel displays the
+                  mean(s) for the data the \"real\" data that was selected based on your filter. The gray 
+                    bars are a histogram of the samples of data that were simulated by the Monte Carlo."),
+                  actionButton(inputId = "run_MC",
+                               "Run Monte Carlo Simulation")
+                )
+                ),#column for descriptors,p
                 
                 
                 
@@ -555,14 +568,11 @@ observeEvent(input$filter_update,{
 
 observeEvent(input$run_MC,{
   
-  print("temp")
-  
-  
-  #NEED TO HANDLE GROUPING
+  #Function output works, but nothing is output to the app currently
   MC_func(MC_data = curr_data$data,
           MC_responses = curr_data$behv,
           MC_filter = curr_data$filter,
-          MC_grouping = NA,
+          MC_grouping = input$group_select,
           MC_simulations = 500,
           MC_seed = 1)
   
