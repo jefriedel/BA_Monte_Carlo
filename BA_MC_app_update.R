@@ -7,6 +7,7 @@ library(rhandsontable)
 options(shiny.reactlog = TRUE)
 
 source("./scripts/load_files.R")
+
 source("./scripts/helper_functions.R")
 
 { #Bracket for UI
@@ -285,6 +286,7 @@ server = function(input, output, session) {
   curr_data = reactiveValues()
   
   curr_data$filter = NA
+  curr_data$MC_out = NA
   
   old_sess = ""
   old_behv = ""
@@ -569,7 +571,7 @@ observeEvent(input$filter_update,{
 observeEvent(input$run_MC,{
   
   #Function output works, but nothing is output to the app currently
-  MC_func(MC_data = curr_data$data,
+  curr_data$MC_out = MC_func(MC_data = curr_data$data,
           MC_responses = curr_data$behv,
           MC_filter = curr_data$filter,
           MC_grouping = input$group_select,

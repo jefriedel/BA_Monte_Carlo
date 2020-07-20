@@ -42,12 +42,12 @@ log_prop_calc = function(full_data,
   full_data$data = full_data$data %>%
     arrange(!!sessions) %>%
     mutate(!!as.symbol(make_clean_names(col_name)) :=
-             logb(!!responding / lag(!!responding),
+             logb((!!responding + 1) / (lag(!!responding)+1),
                   base = log_base)) %>%
     ungroup() %>%
     arrange(!!grouping)
 
-  full_data$col_descript = c(full_data$col_descript, col_name)
+  full_data$col_names = c(full_data$col_names, col_name)
 
   full_data$behv = col_name
 
@@ -172,36 +172,39 @@ data_selection_plotter = function(figure_data,
 #         MC_seed = MC_seed2)
 
 
-# # #Live testing
-# MC_grouping = "Group"
-# MC_responses = "Responses"
-# MC_sessions = "Session"
-# MC_subjects = "Subject"
-# 
-# MC_data = mc_data$example
-# 
-# MC_data = log_prop_calc(MC_data,
-#               responding = MC_responses,
-#               sessions = MC_sessions,
-#               grouping = MC_subjects)
-# 
-# MC_filter =
-#   tibble(condition = c("Reinstatement")) %>%
-#   expand(condition) %>%
-#   mutate(data_color = "Include")
-# 
-# MC_grouping = "Group"
-# 
-# 
-# MC_simulations = 500
-# MC_seed = 1
-# 
-# MC_func(MC_data = MC_data$data,
-#                    MC_responses = MC_responses,
-#                    MC_filter = MC_filter,
-#                    MC_grouping = MC_grouping,
-#                    MC_simulations = 500,
-#                    MC_seed = 1)
+# #Live testing
+MC_grouping = "Group"
+MC_responses = "Responses"
+MC_sessions = "Session"
+MC_subjects = "Subject"
+
+MC_data = mc_data$example
+
+MC_data = log_prop_calc(MC_data,
+              responding = MC_responses,
+              sessions = MC_sessions,
+              grouping = MC_subjects)
+
+MC_filter =
+  tibble(condition = c("Reinstatement")) %>%
+  expand(condition) %>%
+  mutate(data_color = "Include")
+
+MC_grouping = "Group"
+
+# #For reststing within code
+# MC_responses = MC_data$behv
+# MC_data = MC_data$data
+
+MC_simulations = 500
+MC_seed = 1
+
+temp = MC_func(MC_data = MC_data$data,
+                   MC_responses = MC_responses,
+                   MC_filter = MC_filter,
+                   MC_grouping = MC_grouping,
+                   MC_simulations = 500,
+                   MC_seed = 1)
 
 
 MC_func = function(MC_data,
@@ -275,8 +278,17 @@ if(is.na(MC_filter)) {
       pull(sample_size)
 
     for (sim in 1:MC_simulations) {
-
-
+      
+      #For testing to get full samples
+      # sim_data = bind_rows(
+      #   sim_data,
+      #   filtered_MC %>%
+      #     sample_n(size = curr_size,
+      #              replace = TRUE) %>%
+      #     mutate(run = sim)
+      # )
+      
+      
       sim_data = bind_rows(
         sim_data,
         filtered_MC %>%
@@ -293,7 +305,6 @@ if(is.na(MC_filter)) {
           mutate(run = sim)
       )
 
-
     } # Loop for current simulation
 
     #Remove to clear out memory
@@ -301,10 +312,50 @@ if(is.na(MC_filter)) {
 
   } #Loop for current group
 
+  #Join experimental mean to sim mean
+  sim_data = left_join(sim_data,
+                       exp_data %>% 
+                         select(group, mean) %>% 
+                         rename("exp_mean" = mean))
+  
+  sim_labs = c("Sim less than real",
+    "Sim equal to real" ,
+    "Sim greater than real")
+  
+  #Chose if then categorization rather than cut because == is easiest for matching the mean
+  sim_out = sim_data %>%
+    mutate(comp_exp_mean = if_else(round(mean,digits = 4)==round(exp_mean,digits =4),
+                                   2,
+                                   if_else(mean<exp_mean,1,3))) %>%
+    select(-exp_mean) %>%
+    mutate(comp_exp_mean = factor(comp_exp_mean,
+                                   levels = c(1,2,3),
+                                   labels = sim_labs))  %>%
+    group_by(group,comp_exp_mean) %>%
+    summarize(frequency = n())
+  
+  sim_out = 
+    right_join(sim_out,
+             expand(tibble(group = sim_data %>% pull(group) %>%unique() %>% as.character(),
+                           comp_exp_mean = sim_labs),
+                    group, comp_exp_mean)) %>%
+    replace_na(list(frequency = 0)) %>%
+    group_by(group) %>%
+    mutate(perc = frequency/sum(frequency)) %>%
+      ungroup() %>%
+      mutate(group = as_factor(group),
+             comp_exp_mean = parse_factor(comp_exp_mean,
+                                       levels = c("Sim less than real",
+                                                  "Sim equal to real" ,
+                                                  "Sim greater than real"),
+                                       ordered = TRUE))
+
+  
   mc_output = list()
   
   mc_output$sim_data = sim_data
   mc_output$exp_data = exp_data
+  mc_output$sim_analysis = sim_out
   
   return(mc_output)
 
