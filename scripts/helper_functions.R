@@ -47,7 +47,7 @@ log_prop_calc = function(full_data,
     ungroup() %>%
     arrange(!!grouping)
 
-  full_data$col_names = c(full_data$col_names, col_name)
+  full_data$col_descript = c(full_data$col_descript, col_name)
 
   full_data$behv = col_name
 
@@ -172,39 +172,39 @@ data_selection_plotter = function(figure_data,
 #         MC_seed = MC_seed2)
 
 
-# #Live testing
-MC_grouping = "Group"
-MC_responses = "Responses"
-MC_sessions = "Session"
-MC_subjects = "Subject"
-
-MC_data = mc_data$example
-
-MC_data = log_prop_calc(MC_data,
-              responding = MC_responses,
-              sessions = MC_sessions,
-              grouping = MC_subjects)
-
-MC_filter =
-  tibble(condition = c("Reinstatement")) %>%
-  expand(condition) %>%
-  mutate(data_color = "Include")
-
-MC_grouping = "Group"
-
-# #For reststing within code
-# MC_responses = MC_data$behv
-# MC_data = MC_data$data
-
-MC_simulations = 500
-MC_seed = 1
-
-temp = MC_func(MC_data = MC_data$data,
-                   MC_responses = MC_responses,
-                   MC_filter = MC_filter,
-                   MC_grouping = MC_grouping,
-                   MC_simulations = 500,
-                   MC_seed = 1)
+# # #Live testing
+# MC_grouping = "Group"
+# MC_responses = "Responses"
+# MC_sessions = "Session"
+# MC_subjects = "Subject"
+# 
+# MC_data = mc_data$example
+# 
+# MC_data = log_prop_calc(MC_data,
+#               responding = MC_responses,
+#               sessions = MC_sessions,
+#               grouping = MC_subjects)
+# 
+# MC_filter =
+#   tibble(condition = c("Reinstatement")) %>%
+#   expand(condition) %>%
+#   mutate(data_color = "Include")
+# 
+# MC_grouping = "Group"
+# 
+# # #For reststing within code
+# # MC_responses = MC_data$behv
+# # MC_data = MC_data$data
+# 
+# MC_simulations = 500
+# MC_seed = 1
+# 
+# temp = MC_func(MC_data = MC_data$data,
+#                    MC_responses = MC_responses,
+#                    MC_filter = MC_filter,
+#                    MC_grouping = MC_grouping,
+#                    MC_simulations = 500,
+#                    MC_seed = 1)
 
 
 MC_func = function(MC_data,
@@ -348,9 +348,16 @@ if(is.na(MC_filter)) {
                                        levels = c("Sim less than real",
                                                   "Sim equal to real" ,
                                                   "Sim greater than real"),
-                                       ordered = TRUE))
+                                       ordered = TRUE)) %>%
+    arrange(group,comp_exp_mean)
 
-  
+  colnames(sim_out) = c(
+    "Group",
+    "Real mean compared to simulated means",
+    "Relative frequency",
+    "Relative percentage"
+  )
+
   mc_output = list()
   
   mc_output$sim_data = sim_data

@@ -268,10 +268,10 @@ ui =
                     bars are a histogram of the samples of data that were simulated by the Monte Carlo."),
                   actionButton(inputId = "run_MC",
                                "Run Monte Carlo Simulation")
-                )
-                ),#column for descriptors,p
+                )#Top column
+                ),#Fluid row
                 
-                
+                tableOutput("MC_main")
                 
               )}#Start MC panel
               
@@ -529,7 +529,21 @@ server = function(input, output, session) {
         }) #render UI
   } # Full brace
   
-  #Attempt to update filters
+  output$MC_main = renderTable({
+    
+    validate(need(
+      !is.na(curr_data$MC_out),
+      "Please select data to display plot."
+    ))
+    
+
+    curr_data$MC_out$sim_analysis
+    
+    
+    
+  })  
+  
+  
   
 observeEvent(input$filter_update,{
     
