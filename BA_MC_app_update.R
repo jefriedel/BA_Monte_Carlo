@@ -219,7 +219,7 @@ ui =
                   #Filter setup
                   column(6,
                          
-                         helpText("Select a grouping factor if you want different Monte Carlo
+                         p("Select a grouping factor if you want different Monte Carlo
                                   analyses based on that grouping. If no grouping factor is 
                                   selected, then there will be only one sample."),
                          
@@ -232,7 +232,7 @@ ui =
                   
                   column(6,
                          
-                         helpText("Use the boxes below to select filters for the data you want included in your
+                         p("Use the boxes below to select filters for the data you want included in your
                                   \"real\" sample. When completed, click he \"Update Filter\" button below,
                                   which will highlight the selected data in the plot."),
                          
@@ -271,9 +271,32 @@ ui =
                 )#Top column
                 ),#Fluid row
                 
-                tableOutput("MC_main")
+                div(tableOutput("MC_main"),
+                    style = "margin-top: 8px;"),
                 
-              )}#Start MC panel
+                fluidRow(
+                  div((column(12,
+                              p("A basic summary table will be displayed to show that the script is complete. On the
+                    \"MC results\" tab, you will find a figure and method to export the data.")
+                  )),
+                  style = "margin-top: 8px;")) #Summary explanation
+                
+              
+              )},#Start MC panel
+              
+              {tabPanel(
+                "MC Results",
+                
+                h2("Monte Carlo Results"),
+                
+                h3("Figure"),
+                
+                column(12,plotOutput("MC_results",
+                                     width = "100%",
+                                     height = "400px"))
+                        
+                
+              )}#MC Results
               
             )#Nav
 
@@ -533,7 +556,7 @@ server = function(input, output, session) {
     
     validate(need(
       !is.na(curr_data$MC_out),
-      "Please select data to display plot."
+      "Run the Monte Carlo to display a summary of results."
     ))
     
 
@@ -543,7 +566,16 @@ server = function(input, output, session) {
     
   })  
   
-  
+  output$MC_results = renderPlot({
+    
+    validate(need(
+      !is.na(curr_data$MC_out),
+      "Run the Monte Carlo to display results."
+    ))
+    
+    
+    
+  })
   
 observeEvent(input$filter_update,{
     

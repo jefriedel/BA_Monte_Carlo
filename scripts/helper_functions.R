@@ -172,7 +172,7 @@ data_selection_plotter = function(figure_data,
 #         MC_seed = MC_seed2)
 
 
-# # #Live testing
+# #Live testing
 # MC_grouping = "Group"
 # MC_responses = "Responses"
 # MC_sessions = "Session"
@@ -378,23 +378,39 @@ if(is.na(MC_filter)) {
 
 #Plotting output from MC simulations----
 
-# MC_data = MC_out
-#
-# MC_filter = tibble(condition = c("Reinstatement"),
-#                    experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-#   expand(condition, experimental_group) %>%
-#   mutate(MC_include = "Include")
-#
-# MC_grouping = "experimental_group"
-#
-# MC_responses = "log_responses"
+#Live testing
+MC_grouping = "Group"
+MC_responses = "Responses"
+MC_sessions = "Session"
+MC_subjects = "Subject"
 
-# #For new data
-# 
-# MC_data = MC_func(MC_data = mc_data$example$data,
-#                   MC_responses = "Responses")
-# MC_grouping = NA
-# MC_responses = "Responses"
+MC_data = mc_data$example
+
+MC_data = log_prop_calc(MC_data,
+              responding = MC_responses,
+              sessions = MC_sessions,
+              grouping = MC_subjects)
+
+MC_filter =
+  tibble(condition = c("Reinstatement")) %>%
+  expand(condition) %>%
+  mutate(data_color = "Include")
+
+# #For reststing within code
+# MC_responses = MC_data$behv
+# MC_data = MC_data$data
+
+MC_simulations = 500
+MC_seed = 1
+MC_responses = "log. "
+
+MC_data$MC_out = MC_func(MC_data = MC_data$data,
+                   MC_responses = MC_data$behv,
+                   MC_filter = MC_filter,
+                   MC_grouping = MC_grouping,
+                   MC_simulations = 500,
+                   MC_seed = 1)
+
 
 MC_out_plotter = function(MC_data,
                           MC_grouping = NA,
@@ -408,13 +424,18 @@ MC_out_plotter = function(MC_data,
   }
 
 
+  
 
-  plot_out = ggplot(MC_data$sim_data, aes(x = mean)) +
-    geom_histogram(bins = 50) +
+  
+  plot_out = 
+    ggplot(MC_data$MC_out$sim_data, aes(x = mean)) +
+    geom_histogram(bins = 50,
+                   color = "black"  ,
+                   fill = rep(c("#e69f00","#009ee9"),25)) +
     theme_classic() +
     ylab("Frequency") +
-    xlab(paste("Mean",MC_responses)) +
-    geom_vline(data = MC_data$exp_data,
+    xlab(paste("Mean",MC_responses,"from Simulated Sample")) +
+    geom_vline(data = MC_data$MC_out$exp_data,
                aes(xintercept = mean),
                color = "red")
 
