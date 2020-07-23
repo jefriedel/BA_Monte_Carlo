@@ -421,6 +421,10 @@ MC_out_plotter = function(MC_data,
     MC_data$sim_data = MC_data$sim_data %>% mutate(grouping = "None")
     MC_grouping = "grouping"
 
+  } else {
+    
+    MC_grouping = as.symbol(make_clean_names(MC_grouping))
+    
   }
 
 
