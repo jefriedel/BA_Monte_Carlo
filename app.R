@@ -17,12 +17,12 @@ ui =
     
     useShinyjs(),
     
-    tags$head(
-    tags$style(HTML("
-      h2 {
-        line-height: 1.1;
-        margin-top: 0px;
-      }"))), #CSS 
+    # # tags$head(pp
+    # tags$style(HTML("
+    #   h2 {
+    #     line-height: 1.1;
+    #     margin-top: 0px;
+    #   }"))), #CSS 
     
     titlePanel(h1("Monte Carlo for SCED")),
             
@@ -643,4 +643,4 @@ observeEvent(input$run_MC,{
   
 }#Server function
 
-runApp(list(ui = ui, server = server))
+shinyApp(ui, server)
