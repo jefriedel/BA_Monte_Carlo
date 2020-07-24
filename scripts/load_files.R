@@ -29,4 +29,4 @@ relapse1 = relapse1 %>%
 
 mc_data$example$data = relapse1
 
-rm(relapse1,relapse3)
+rm(relapse1)

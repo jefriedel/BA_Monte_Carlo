@@ -294,7 +294,20 @@ ui =
                 
                 column(12,plotOutput("MC_results",
                                      width = "100%",
-                                     height = "400px"))
+                                     height = "400px"),
+                       p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
+                       groups were specified). The figure(s) will show a histogram of the means for each sample that
+                       was simulated by the Monte Carlo Analysis. For example, if you specified 500 simulations,
+                       then the histogram will include 500 simulated means."),
+                       p("The dashed black line shows you the mean of your \"real\" data. If the dashed line is
+                       in the center of the distribution, then that indicates that the Monte Carlo analysis could easily
+                       simulate data that looks similar to your \"real\" data. In typical statistical langauge, your
+                       \"real\" data are not statistically significant."),
+                       p("If the dashed line is at the extreme end of the distributions, then that indicates that
+                       the Monte Carlo analysis was not able to reliably simulate data that looks similar to your \"real\" data. 
+                       In typical statistical langauge, your \"real\" data are statistically significant.")
+                )
+
                         
                 
               )}#MC Results
@@ -574,7 +587,7 @@ server = function(input, output, session) {
       "Run the Monte Carlo to display results."
     ))
     
-     MC_out_plotter(MC_data = isolate(curr_data$MC_out),
+    MC_out_plotter(MC_data = curr_data$MC_out,
                     MC_grouping = input$group_select)
     
   })
