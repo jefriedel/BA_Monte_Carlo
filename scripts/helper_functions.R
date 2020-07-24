@@ -378,80 +378,123 @@ if(is.na(MC_filter)) {
 
 #Plotting output from MC simulations----
 
-#Live testing
-MC_grouping = "Group"
-MC_responses = "Responses"
-MC_sessions = "Session"
-MC_subjects = "Subject"
-
-MC_data = mc_data$example
-
-MC_data = log_prop_calc(MC_data,
-              responding = MC_responses,
-              sessions = MC_sessions,
-              grouping = MC_subjects)
-
-MC_filter =
-  tibble(condition = c("Reinstatement")) %>%
-  expand(condition) %>%
-  mutate(data_color = "Include")
-
-# #For reststing within code
-# MC_responses = MC_data$behv
-# MC_data = MC_data$data
-
-MC_simulations = 500
-MC_seed = 1
-MC_responses = "log. "
-
-MC_data$MC_out = MC_func(MC_data = MC_data$data,
-                   MC_responses = MC_data$behv,
-                   MC_filter = MC_filter,
-                   MC_grouping = MC_grouping,
-                   MC_simulations = 500,
-                   MC_seed = 1)
-
+# #Live testing
+# MC_grouping = "Group"
+# MC_responses = "Responses"
+# MC_sessions = "Session"
+# MC_subjects = "Subject"
+# 
+# MC_data = mc_data$example
+# 
+# MC_data = log_prop_calc(MC_data,
+#               responding = MC_responses,
+#               sessions = MC_sessions,
+#               grouping = MC_subjects)
+# 
+# MC_filter =
+#   tibble(condition = c("Reinstatement")) %>%
+#   expand(condition) %>%
+#   mutate(data_color = "Include")
+# 
+# # #For reststing within code
+# # MC_responses = MC_data$behv
+# # MC_data = MC_data$data
+# 
+# MC_simulations = 500
+# MC_seed = 1
+# 
+# MC_data$MC_out = MC_func(MC_data = MC_data$data,
+#                    MC_responses = MC_data$behv,
+#                    MC_filter = MC_filter,
+#                    MC_grouping = MC_grouping,
+#                    MC_simulations = 500,
+#                    MC_seed = 1)
+# 
+# MC_data2 = MC_data
+# MC_grouping2 = MC_grouping
+# 
+# MC_out_plotter(MC_data = MC_data2,
+#                MC_grouping = MC_grouping2)
+#
+# #Live testing
+# MC_data3 = isolate(curr_data$MC_out)
+# MC_grouping3 = input$group_select
+# 
+# MC_data = MC_data3
+# MC_grouping = MC_grouping3
+# 
+# MC_out_plotter(MC_data = MC_data3,
+#          MC_grouping = MC_grouping3)
 
 MC_out_plotter = function(MC_data,
-                          MC_grouping = NA,
-                          MC_responses){
+                          MC_grouping = ""){
 
-  if (is.na(MC_grouping)) {
-    #If there is no grouping factor, create one with no groups
-    MC_data$sim_data = MC_data$sim_data %>% mutate(grouping = "None")
+  if (MC_grouping=="") {
     MC_grouping = "grouping"
-
+    
   } else {
     
     MC_grouping = as.symbol(make_clean_names(MC_grouping))
     
   }
-
-
   
-
+  min_mean = MC_data$sim_data %>% 
+    pull(mean) %>% min()
   
-  plot_out = 
-    ggplot(MC_data$MC_out$sim_data, aes(x = mean)) +
-    geom_histogram(bins = 50,
-                   color = "black"  ,
-                   fill = rep(c("#e69f00","#009ee9"),25)) +
+  max_mean =MC_data$sim_data %>% 
+    pull(mean) %>% max()
+  
+  bin_width = (max_mean - min_mean) / 50
+  
+  plot_data = MC_data$sim_data %>%
+    mutate(bin = cut_interval(mean,
+                              n = 50,
+                              ordered_result = TRUE))
+  
+  plot_data = right_join(
+    plot_data %>%
+      group_by(!!MC_grouping, bin) %>%
+      summarize(freq = n()),
+    expand_grid(bin = plot_data %>%
+                  pull(bin) %>% levels(),
+                !!MC_grouping:= MC_data$sim_data %>%
+                  pull(!!MC_grouping) %>%
+                  unique())
+  ) %>%
+    replace_na(list(freq = 0)) %>%
+    arrange(group) %>%
+    separate(bin,
+             into = c("min_bound","max_bound"),
+             sep = ",",
+             remove = FALSE) %>%
+    mutate(min_bound = as.numeric(str_sub(min_bound,2)),
+           max_bound = as.numeric(str_sub(max_bound, end = -2)),
+           bin_cen = (min_bound + max_bound) / 2) %>%
+    ungroup()
+  
+  plot_data = plot_data %>%
+    mutate(bin_color = rep(c("#e69f00","#009ee9"),
+                           NROW(plot_data)/2))
+  
+  fig = ggplot(plot_data) + 
+    geom_col(aes(x = bin_cen,
+                 y=freq,
+                 fill = I(bin_color))) + 
     theme_classic() +
     ylab("Frequency") +
-    xlab(paste("Mean",MC_responses,"from Simulated Sample")) +
-    geom_vline(data = MC_data$MC_out$exp_data,
+    xlab(paste("Mean",MC_data$behv,"from Simulated Samples")) +
+    geom_vline(data = MC_data$exp_data,
                aes(xintercept = mean),
-               color = "red")
-
-
-  if(MC_grouping != "grouping"){
-    
-    plot_out = plot_out + 
-      facet_wrap(vars(!!as.symbol(make_clean_names(MC_grouping))))
-    
+               color = "black",
+               linetype = "dashed",
+               size = 1)
+  
+  if(deparse((MC_grouping)) != "grouping"){
+    fig = fig +
+      facet_wrap(vars(!!MC_grouping))
   }
-
-  return(plot_out)
+  
+  return(fig)
 
 }
 

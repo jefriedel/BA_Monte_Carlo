@@ -241,7 +241,8 @@ ui =
                          fluidRow(div(actionButton(inputId = "filter_update",
                                                    label = "Update Filter",
                                                    icon = icon(name = "filter", lib = "font-awesome")),
-                                      style = "float: right; margin-right: 10px;"))) #Var list column
+                                      style = "float: right; margin-right: 10px;
+                                               margin-bottom: 10px;"))) #Var list column
                   
                 )#Filters row
                 
@@ -573,7 +574,8 @@ server = function(input, output, session) {
       "Run the Monte Carlo to display results."
     ))
     
-    
+     MC_out_plotter(MC_data = isolate(curr_data$MC_out),
+                    MC_grouping = input$group_select)
     
   })
   

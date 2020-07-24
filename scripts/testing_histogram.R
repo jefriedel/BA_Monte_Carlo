@@ -1,3 +1,14 @@
+if (is.na(MC_grouping)) {
+  #If there is no grouping factor, create one with no groups
+  MC_data$sim_data = MC_data$sim_data %>% mutate(grouping = "None")
+  MC_grouping = "grouping"
+  
+} else {
+  
+  MC_grouping = as.symbol(make_clean_names(MC_grouping))
+  
+}
+
 min_mean = MC_data$MC_out$sim_data %>% 
   pull(mean) %>% min()
 
@@ -5,24 +16,6 @@ max_mean = MC_data$MC_out$sim_data %>%
   pull(mean) %>% max()
 
 bin_width = (max_mean - min_mean) / 50
-
-MC_data$MC_out$sim_data %>%
-  mutate(bin = cut_interval(mean,
-                          n = 50,
-                         ordered_result = TRUE)) %>%
-  group_by(bin) %>%
-  summarize(count = n())
-
-findInterval(MC_data$MC_out$sim_data %>% pull(mean),
-  seq(from = min_mean,
-    to = max_mean,
-    length.out = 50)
-)
-
-MC_data$MC_out$sim_data %>%
-  mutate(bin = cut(x = mean,
-                   breaks = 50)) %>%
-pull(bin) %>% levels()
 
 MC_data$MC_out$sim_data = MC_data$MC_out$sim_data %>%
   mutate(bin = cut_interval(mean,
@@ -57,9 +50,16 @@ MC_data$MC_out$sim_data = MC_data$MC_out$sim_data %>%
 fig = ggplot(MC_data$MC_out$sim_data) + 
   geom_col(aes(x = bin_cen,
                y=freq,
-               fill = I(bin_color)))
+               fill = I(bin_color))) + 
+  theme_classic() +
+  ylab("Frequency") +
+  xlab(paste("Mean",MC_data$behv,"from Simulated Samples")) +
+  geom_vline(data = MC_data$MC_out$exp_data,
+             aes(xintercept = mean),
+             color = "red")
 
-fig +
-  facet_wrap(vars(!!MC_grouping))
-
+if(deparse((MC_grouping)) != "grouping"){
+  fig = fig +
+    facet_wrap(vars(!!MC_grouping))
+}
   
