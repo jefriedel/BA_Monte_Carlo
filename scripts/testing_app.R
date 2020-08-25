@@ -1,58 +1,47 @@
-library(shiny)
-library(dplyr)
-library(purrr)
+#Code for testing MC function on new data
 
-filterex <- function(data = NULL) {
-  i1 <-  data %>%
-    summarise_all(is.factor) %>%
-    unlist()
-  dvars <- i1 %>%
-    names(.)[.]
-  rvars <- i1 %>%
-    `!` %>%
-    names(.)[.]
-  
-  filters <-dvars %>% 
-    map(~list(inputId = ., 
-              label = ., 
-              choices = levels(data[[.]]), 
-              selected = levels(data[[.]])))
-  
-  
-  
-  
-  ui = fluidPage(
-    titlePanel("Dynamic filtering example"),
-    sidebarPanel(
-      checkboxGroupInput(inputId = "design",
-                         label = "Design Variables",
-                         choices = dvars,
-                         selected = dvars),
-      map(filters, ~do.call(what = checkboxGroupInput, .))),
-    mainPanel(dataTableOutput("data"))
-  )
-  
-  
-  
-  server = function(input, output, session) {
-    
-    dat_subset <- reactive({
-      df <-  data %>%
-        select(input$design, rvars) 
-      dvars %>% 
-        map2_df(list(df), ~.y  %>%
-                  filter_at(.x, all_vars(. %in% input[[.x]])))
-      
-      
-      
-    })  
-    output$data <- renderDataTable({
-      dat_subset()
-    })
-    
-  }
-  
-  runApp(list(ui = ui, server = server))
-}
+relapse3  = read_csv("./data/Relapse Data 3 Rich.csv",
+                     col_types = cols())
 
-filterex(iris)
+MC_data = list()
+
+MC_data$col_names = colnames(relapse3)
+
+relapse3 = relapse3  %>%
+  clean_names()
+
+relapse3 = relapse3 %>%
+  mutate(subject = as_factor(subject),
+         group = parse_factor(group))
+
+MC_data$data = relapse3
+
+MC_grouping = "Group"
+MC_responses = "Rate"
+MC_sessions = "Session"
+MC_subjects = "Subject"
+
+source("./scripts/helper_functions.R")
+
+MC_data = log_prop_calc(MC_data,
+              responding = MC_responses,
+              sessions = MC_sessions,
+              grouping = MC_subjects)
+
+MC_responses = "log Prop. Resp."
+
+MC_filter =
+  tibble(condition = c("Renewal")) %>%
+  expand(condition) %>%
+  mutate(data_color = "Include")
+
+MC_grouping = "Group"
+
+# #For reststing within code
+# MC_responses = MC_data$behv
+# MC_data = MC_data$data
+
+MC_simulations = 500
+MC_seed = 1
+
+MC_data = MC_data$data

@@ -46,9 +46,14 @@ log_prop_calc = function(full_data,
                   base = log_base)) %>%
     ungroup() %>%
     arrange(!!grouping)
+  
+  
+  #full_data$col_names = c(full_data$col_names, col_name)
 
+  #Error creeped in from old version. Kept because it somehow updates name
+  #on added column
   full_data$col_descript = c(full_data$col_descript, col_name)
-
+  
   full_data$behv = col_name
 
   return(full_data)
@@ -254,7 +259,8 @@ if(is.na(MC_filter)) {
                           na.rm = TRUE),
               sd = sd(!!MC_responses,
                       na.rm=TRUE),
-              sample_size = n())
+              sample_size = n(),
+              .groups ="drop")
 
   #Create sim_data for looping
   sim_data = tibble()
@@ -300,7 +306,8 @@ if(is.na(MC_filter)) {
                         na.rm = TRUE),
             sd = sd(!!MC_responses,
                     na.rm = TRUE),
-            MC_samp = (n())
+            MC_samp = (n()),
+            .groups = 
           ) %>%
           mutate(run = sim)
       )
@@ -332,13 +339,13 @@ if(is.na(MC_filter)) {
                                    levels = c(1,2,3),
                                    labels = sim_labs))  %>%
     group_by(group,comp_exp_mean) %>%
-    summarize(frequency = n())
+    summarize(frequency = n(),
+              .groups = "drop")
   
   sim_out = 
     right_join(sim_out,
-             expand(tibble(group = sim_data %>% pull(group) %>%unique() %>% as.character(),
-                           comp_exp_mean = sim_labs),
-                    group, comp_exp_mean)) %>%
+             expand_grid(group = sim_data %>% pull(group) %>%unique() %>% as.character(),
+                           comp_exp_mean = sim_labs)) %>%
     replace_na(list(frequency = 0)) %>%
     group_by(group) %>%
     mutate(perc = frequency/sum(frequency)) %>%

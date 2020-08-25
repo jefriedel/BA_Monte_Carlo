@@ -4,8 +4,6 @@ library(tidyverse)
 library(janitor)
 library(rhandsontable)
 
-#testing additions
-
 options(shiny.reactlog = TRUE)
 
 source("./scripts/load_files.R")
@@ -81,8 +79,10 @@ ui =
                   div(rHandsontableOutput("data_display",
                                       height = 300),
                       style = "margin-bottom: 10px;"),
-                  p("If you manually change values on the data table, click 
-                      to update the data to ensure it loads properly into the app."),
+                  p(tags$em("It is possible to modify the data displayed above,
+                            but it is not recommended."),
+                    "If you modify  values on the data table, click the \"Update\"
+                    button to make sure the new data is loaded into to the app."),
                   
                   div(actionButton("update",
                                    "Update"),
@@ -95,11 +95,16 @@ ui =
                   fluidRow(
                     column(12,
                     column(#Right column
-                      6,
+                      12,# Bumped up from size six after hiding rename columns
                       
                       #Row for specifying X, Y, subject
                       {fluidRow(
-                        h2("Specify Columns"),
+                        h2("Select Columns"),
+                        
+                        p("In the drop menus below, you must select the columns that
+                          are for hold \"responding\"\\behavioral data, the session
+                          indicator, and subject\\participant identifier. The menus 
+                          will only function once data has been loaded into the app."),
                         
                         #Input for selecting responses
                         selectInput(
@@ -129,22 +134,22 @@ ui =
                       
                     ), #Lefthand column
                     
-                    {column(
-                      6,
-                      h2("Rename Columns"),
-                      selectInput(
-                        "col_rename_input",
-                        "Column to Rename",
-                        choices = NULL,
-                        width = "100%"
-                      ),
-                      textInput("new_col_name",
-                                "New Column Name", width = "100%"),
-                      div(actionButton("rename_button",
-                                       "Rename"), style = "float: right;"),
-                      helpText("If you manually rename columns, the app will 
-                               reset any other column selections you made.")
-                    )}#End of rename column
+                    # {column(
+                    #   6,
+                    #   h2("Rename Columns"),
+                    #   selectInput(
+                    #     "col_rename_input",
+                    #     "Column to Rename",
+                    #     choices = NULL,
+                    #     width = "100%"
+                    #   ),
+                    #   textInput("new_col_name",
+                    #             "New Column Name", width = "100%"),
+                    #   div(actionButton("rename_button",
+                    #                    "Rename"), style = "float: right;"),
+                    #   helpText("If you manually rename columns, the app will 
+                    #            reset any other column selections you made.")
+                    # )}#End of rename column
                     
                     )#Cxtra column for spacing
                   )# End of input row
