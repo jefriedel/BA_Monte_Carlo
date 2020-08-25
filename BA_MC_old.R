@@ -6,13 +6,34 @@ library(rhandsontable)
 BA_MC_data =
   read_csv("./data/Relapse Data 1.csv",
            col_types = cols()) %>%
-  clean_names()
+  clean_names() %>%
+  group_by(subject) %>%
+  mutate(log_responses = log2((responses+1)/(lag(responses)+1))) %>%
+  ungroup()
 
-col_descript = c("Condition",
-                 "Session Number",
-                 "Responses",
-                 "Subject Number",
-                 "Experimental Group")
+#Read premade output for testing
+MC_out = read_csv("./data/MC_out.csv",
+                  col_types = cols())
+
+# default MC description
+# col_descript = c("Condition",
+#                  "Session Number",
+#                  "Responses",
+#                  "Subject Number",
+#                  "Experimental Group",
+#                  "log Responses")
+
+#testing new data column descriptors                  
+col_descript = c("Week",
+"Medication Condition",
+"Behavioral Programme",
+"Problem Behavior Count",
+"Subject",
+"log Problem Behavior",
+"Med change")
+
+BA_MC_data = other_data
+
 
 colnames(BA_MC_data) = col_descript
 
@@ -191,9 +212,32 @@ ui =
                              "Number of Monte Carlo Simulations (0-1,000)",
                              value = 500,
                              min = 1,
-                             max = 1000)
+                             max = 1000),
                 
-              )}#Monte Carlo panel
+                numericInput("MC_seed",
+                             "Set seed for randomize",
+                             value = sample.int(.Machine$integer.max,1),
+                             min = 1,
+                             max = .Machine$integer.max)
+                
+              )}, #Monte Carlo panel
+              
+              #MC output panel
+              {
+              tabPanel("Monte Carlo Output",
+                       
+                       #Plot of MC
+                       plotOutput("MC_out_plot",
+                                  width = "100%"),
+                       
+                       #MC Data output handler
+                       rHandsontableOutput("MC_out_table"),
+                       
+                       #Downloads
+                       downloadButton("download_MC_output",
+                                      "Download Output")
+                       
+                       )}
               
             )#Navlist Panel
             
@@ -209,7 +253,7 @@ server = function(input, output, session) {
   #Create reactive data for filter
   curr_filter = reactiveValues(data = NA)
   
-  curr_MC_out = reactiveValues(data = NA)
+  curr_MC_out = reactiveValues(data = MC_out)
   
   #Display plot of data for selecting filter
   output$data_input_plot = renderPlot(expr = {
@@ -222,13 +266,38 @@ server = function(input, output, session) {
     )
   })
   
-  #Initial render of table
+  #Plotter currently relies fixed filter, needs to be fixed
+  output$MC_out_plot = renderPlot({
+    
+    MC_out_plotter(MC_data = curr_MC_out$data,
+                   exp_data = exp_out_func(
+                     curr_data$data,
+                     "experimental_group",       
+                     MC_filter = tibble(
+                       condition = c("Reinstatement"),
+                       experimental_group = c("Sal_Sal", "Amp_Sal")) %>%
+                       expand(condition, experimental_group) %>%
+                       mutate(MC_include = "Include"),
+                     "log_responses"),
+                   MC_grouping = "experimental_group",
+                   MC_responses = "log_responses")
+    
+  })
+  
+  #Initial render of input table
   output$hot_curr_data = renderRHandsontable({
     rhandsontable(curr_data$data,
                   colHeaders = col_descript,
                   height = 300) %>%
       hot_cols(manualColumnResize = TRUE)
   })
+  
+  #Temp render of precalculated output table
+  output$MC_out_table = renderRHandsontable({
+    rhandsontable(curr_MC_out$data, height = 300) %>%
+      hot_col("run",
+              format = "0")
+    })
   
   #Update data in table
   observeEvent(input$update, {
@@ -286,12 +355,10 @@ server = function(input, output, session) {
                     colHeaders = col_descript,
                     height = 400) %>%
         hot_cols(manualColumnResize = TRUE)
+
+      }) #Render table
       
-    
-      
-    }) #Render table
-    
-    #Update lists
+    #$Update lists
     {updateSelectInput(session,
                       "col_rename_input",
                       choices = col_descript)
@@ -315,6 +382,14 @@ server = function(input, output, session) {
                       "comparison_select",
                       choices = c("None", col_descript),
                       selected = "None")
+    
+    #Update MC Output
+    output$MC_out_table = 
+      renderRHandsontable({
+        rhandsontable(curr_MC_out$data, height = 300) %>%
+          hot_col("run",
+                  format = "0")
+      })
     
     }
     
@@ -442,7 +517,11 @@ server = function(input, output, session) {
     #Reset bounds, just in case
     if(runs < 1){runs = 1}
     if(runs > 1000){runs = 1000}
-      
+    
+    curr_seed = input$MC_seed  
+    
+    if(curr_seed < 1){curr_seed = 1}
+    if(curr_seed > .Machine$integer.max){curr_seed = .Machine$integer.max}
       
     #Run the MC
     curr_MC_out$data = MC_func(MC_data = curr_data$data,
@@ -450,7 +529,7 @@ server = function(input, output, session) {
             MC_filter = curr_filter$data,
             MC_grouping = grouping_factor,
             MC_simulations = runs,
-            MC_seed = 1)
+            MC_seed = curr_seed)
     
     
     rm(runs)
@@ -493,6 +572,17 @@ server = function(input, output, session) {
              }) #lapply end
         }#Else to include inputs
       )}
+  
+  #Dataoutput handler
+  {
+  output$download_MC_output = downloadHandler(
+    
+    filename = "Monte Carlo Output.csv",
+    
+    content = function(file){
+      write_csv(curr_MC_out$data,file)
+      }
+  )}
   
 }#Server function
 
