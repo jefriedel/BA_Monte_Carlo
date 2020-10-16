@@ -55,3 +55,4 @@ data/desktop.ini
 scripts/desktop.ini
 desktop.ini
 *.Rproj
+*.dcf
