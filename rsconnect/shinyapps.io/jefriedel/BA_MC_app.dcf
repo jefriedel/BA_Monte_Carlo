@@ -5,9 +5,8 @@ account: jefriedel
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2609824
-bundleId: 3432921
+bundleId: 3592707
 url: https://jefriedel.shinyapps.io/BA_MC_app/
-when: 1595626396.95822
+when: 1599223210.43761
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .gitattributes|BA_MC_old.R|README.md|sim_data.csv
