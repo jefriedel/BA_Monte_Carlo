@@ -2,6 +2,16 @@
 # Created by https://www.toptal.com/developers/gitignore/api/r
 # Edit at https://www.toptal.com/developers/gitignore?templates=r
 
+#Manual additions
+BA Monte Carlo.Rproj
+desktop.ini
+data/desktop.ini
+scripts/desktop.ini
+desktop.ini
+*.Rproj
+*.dcf
+sample data 2.csv
+
 ### R ###
 # History files
 .Rhistory
