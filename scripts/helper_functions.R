@@ -210,7 +210,7 @@ data_selection_plotter = function(figure_data,
 #                    MC_grouping = MC_grouping,
 #                    MC_simulations = 500,
 #                    MC_seed = 1)
-
+# 
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -251,6 +251,7 @@ if(is.na(MC_filter)) {
     replace_na(list(data_color = "Exclude"))
 }
 
+options(dplyr.summarise.inform = FALSE)
   # #Means, SDs, counts for each group
   exp_data = MC_data %>%
     filter(data_color=="Include") %>%
@@ -261,6 +262,8 @@ if(is.na(MC_filter)) {
                       na.rm=TRUE),
               sample_size = n(),
               .groups ="drop")
+  
+  options(dplyr.summarise.inform = FALSE)
 
   #Create sim_data for looping
   sim_data = tibble()

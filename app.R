@@ -3,6 +3,7 @@ library(shinyjs)
 library(tidyverse)
 library(janitor)
 library(rhandsontable)
+library(shinycssloaders)
 
 options(shiny.reactlog = TRUE)
 
@@ -102,7 +103,7 @@ ui =
                         h2("Select Columns"),
                         
                         p("In the drop menus below, you must select the columns that
-                          are for hold \"responding\"\\behavioral data, the session
+                          are for \"responding\"\\behavioral data, the session
                           indicator, and subject\\participant identifier. The menus 
                           will only function once data has been loaded into the app."),
                         
@@ -227,8 +228,13 @@ ui =
                   column(6,
                          
                          p("Select a grouping factor if you want different Monte Carlo
-                                  analyses based on that grouping. If no grouping factor is 
-                                  selected, then there will be only one sample."),
+                            analyses based on that grouping. If no grouping factor is 
+                            selected, then there will be only one sample. 
+                            For example, with the Example Data you may wish to have 
+                            a different Monte Carlo Analysis for each subject. Thus, by 
+                           selecting \"Subject\" as a grouping factor you will get a
+                           seperate analysis for each subject and the results will be
+                           independent of one another."),
                          
                          selectInput(inputId = "group_select",
                                      label = "Select grouping factor",
@@ -279,7 +285,11 @@ ui =
                 )#Top column
                 ),#Fluid row
                 
-                div(tableOutput("MC_main"),
+                div(tableOutput("MC_main") %>% 
+                      withSpinner(color="#001344",
+                                  color.background = "#FFFFFF",
+                                  size = 3,
+                                  type = 2),
                     style = "margin-top: 8px;"),
                 
                 fluidRow(
@@ -301,7 +311,12 @@ ui =
                 
                 column(12,plotOutput("MC_results",
                                      width = "100%",
-                                     height = "400px"),
+                                     height = "400px") %>% 
+                         withSpinner(color="#001344",
+                                     color.background = "#FFFFFF",
+                                     size = 3,
+                                     type = 2)
+                       ,
                        p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
                        groups were specified). The figure(s) will show a histogram of the means for each sample that
                        was simulated by the Monte Carlo Analysis. For example, if you specified 500 simulations,
@@ -468,6 +483,13 @@ server = function(input, output, session) {
     
   })#Rename button
 
+  #Update data column
+  observeEvent(input$update, {
+    
+    curr_data$data = hot_to_r(input$data_display)
+    
+  })
+  
   #Log base e
   observeEvent(input$base_e, {
     
@@ -637,6 +659,9 @@ observeEvent(input$filter_update,{
   })#Full observe
 
 observeEvent(input$run_MC,{
+  
+  #Erase data for updating
+  curr_data$MC_out = NULL
   
   #Function output works, but nothing is output to the app currently
   curr_data$MC_out = MC_func(MC_data = curr_data$data,
