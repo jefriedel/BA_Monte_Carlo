@@ -173,7 +173,9 @@ ui =
                   in behavior. It provides you with a measure of behavior on session B as a proportion 
                   of session A. By looking at the logarithm of the proportion, increases in behavior 
                   have the same impact on our measure as decreases in behavior. For example, the
-                  standard celeration chart uses logrithms on the y-axis.")
+                  standard celeration chart uses logrithms on the y-axis. See ",
+                  tags$b("INSERT CITATION HERE"), " for a full description of ",
+                  tags$i("log"), "proportion responding.")
                 
                 ),#Top with descriptions
                 
@@ -320,7 +322,9 @@ ui =
                        p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
                        groups were specified). The figure(s) will show a histogram of the means for each sample that
                        was simulated by the Monte Carlo Analysis. For example, if you specified 500 simulations,
-                       then the histogram will include 500 simulated means."),
+                       then the histogram will include 500 simulated means. The color for each bar 
+                         are only included so that you can easily distinguish adjacent bars on the
+                         histogram because the figure may appear small."),
                        p("The dashed black line shows you the mean of your \"real\" data. If the dashed line is
                        in the center of the distribution, then that indicates that the Monte Carlo analysis could easily
                        simulate data that looks similar to your \"real\" data. In typical statistical langauge, your
@@ -663,6 +667,10 @@ observeEvent(input$run_MC,{
   #Erase data for updating
   curr_data$MC_out = NULL
   
+  
+  if(!is.na(curr_data$filter)){
+    
+    removeNotification(id = "no_filter_msg")
   #Function output works, but nothing is output to the app currently
   curr_data$MC_out = MC_func(MC_data = curr_data$data,
           MC_responses = curr_data$behv,
@@ -670,7 +678,13 @@ observeEvent(input$run_MC,{
           MC_grouping = input$group_select,
           MC_simulations = 500,
           MC_seed = 1)
-  
+  }else{
+    showNotification("You must identify the comparison data
+                     on the \"sample selection\" tab.",
+                     type = "error",
+                     id = "no_filter_msg",
+                     duration = NULL)
+  }
 })
   
 }#Server function
