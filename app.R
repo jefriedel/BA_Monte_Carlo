@@ -667,7 +667,7 @@ observeEvent(input$run_MC,{
   #Erase data for updating
   curr_data$MC_out = NULL
   
-  
+  showNotification(input$group_select)
   if(!is.na(curr_data$filter)){
     
     removeNotification(id = "no_filter_msg")

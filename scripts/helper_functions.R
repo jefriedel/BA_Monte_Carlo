@@ -178,7 +178,7 @@ data_selection_plotter = function(figure_data,
 
 
 # #Live testing
-# MC_grouping = "Group"
+# MC_grouping = ""
 # MC_responses = "Responses"
 # MC_sessions = "Session"
 # MC_subjects = "Subject"
@@ -197,9 +197,9 @@ data_selection_plotter = function(figure_data,
 # 
 # MC_grouping = "Group"
 # 
-# # #For reststing within code
-# # MC_responses = MC_data$behv
-# # MC_data = MC_data$data
+# #For reststing within code
+# MC_responses = MC_data$behv
+# MC_data = MC_data$data
 # 
 # MC_simulations = 500
 # MC_seed = 1
@@ -210,7 +210,7 @@ data_selection_plotter = function(figure_data,
 #                    MC_grouping = MC_grouping,
 #                    MC_simulations = 500,
 #                    MC_seed = 1)
-# 
+
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -224,7 +224,7 @@ MC_responses = as.symbol(make_clean_names(MC_responses))
 
 MC_data = MC_data %>% ungroup()
 
-if(is.na(MC_grouping)){
+if(is.na(MC_grouping) | MC_grouping == ""){
 
   #If there is no grouping factor, create one with no groups
   MC_data = MC_data %>% mutate(grouping = "None")
@@ -236,7 +236,7 @@ MC_grouping = as.symbol(make_clean_names(MC_grouping))
 
 
 if(is.na(MC_filter)) {
-  #If there is no MC_filter, don't run
+  #If there is no MC_filter, include everything
 
   MC_data = MC_data %>%
     mutate(data_color = "Include")
@@ -263,7 +263,6 @@ options(dplyr.summarise.inform = FALSE)
               sample_size = n(),
               .groups ="drop")
   
-  options(dplyr.summarise.inform = FALSE)
 
   #Create sim_data for looping
   sim_data = tibble()
@@ -309,8 +308,7 @@ options(dplyr.summarise.inform = FALSE)
                         na.rm = TRUE),
             sd = sd(!!MC_responses,
                     na.rm = TRUE),
-            MC_samp = (n()),
-            .groups = 
+            MC_samp = (n())
           ) %>%
           mutate(run = sim)
       )
@@ -322,10 +320,11 @@ options(dplyr.summarise.inform = FALSE)
 
   } #Loop for current group
 
+  options(dplyr.summarise.inform = TRUE)
   #Join experimental mean to sim mean
   sim_data = left_join(sim_data,
                        exp_data %>% 
-                         select(group, mean) %>% 
+                         select(!!MC_grouping, mean) %>% 
                          rename("exp_mean" = mean))
   
   sim_labs = c("Sim less than real",
@@ -341,25 +340,25 @@ options(dplyr.summarise.inform = FALSE)
     mutate(comp_exp_mean = factor(comp_exp_mean,
                                    levels = c(1,2,3),
                                    labels = sim_labs))  %>%
-    group_by(group,comp_exp_mean) %>%
+    group_by(!!MC_grouping,comp_exp_mean) %>%
     summarize(frequency = n(),
               .groups = "drop")
   
   sim_out = 
     right_join(sim_out,
-             expand_grid(group = sim_data %>% pull(group) %>%unique() %>% as.character(),
+             expand_grid(group = sim_data %>% pull(!!MC_grouping) %>%unique() %>% as.character(),
                            comp_exp_mean = sim_labs)) %>%
     replace_na(list(frequency = 0)) %>%
-    group_by(group) %>%
+    group_by(!!MC_grouping) %>%
     mutate(perc = frequency/sum(frequency)) %>%
       ungroup() %>%
-      mutate(group = as_factor(group),
+      mutate(!!MC_grouping := as_factor(!!MC_grouping),
              comp_exp_mean = parse_factor(comp_exp_mean,
                                        levels = c("Sim less than real",
                                                   "Sim equal to real" ,
                                                   "Sim greater than real"),
                                        ordered = TRUE)) %>%
-    arrange(group,comp_exp_mean)
+    arrange(!!MC_grouping,comp_exp_mean)
 
   colnames(sim_out) = c(
     "Group",
@@ -436,6 +435,41 @@ options(dplyr.summarise.inform = FALSE)
 # MC_out_plotter(MC_data = MC_data3,
 #          MC_grouping = MC_grouping3)
 
+# #Live testing
+# MC_grouping = ""
+# MC_responses = "Responses"
+# MC_sessions = "Session"
+# MC_subjects = "Subject"
+# 
+# MC_data = mc_data$example
+# 
+# MC_data = log_prop_calc(MC_data,
+#               responding = MC_responses,
+#               sessions = MC_sessions,
+#               grouping = MC_subjects)
+# 
+# MC_filter =
+#   tibble(condition = c("Reinstatement")) %>%
+#   expand(condition) %>%
+#   mutate(data_color = "Include")
+# 
+# #For reststing within code
+# MC_responses = MC_data$behv
+# MC_data = MC_data$data
+# 
+# MC_simulations = 500
+# MC_seed = 1
+# 
+# temp = MC_func(MC_data = MC_data,
+#                    MC_responses = MC_responses,
+#                    MC_filter = MC_filter,
+#                    MC_grouping = MC_grouping,
+#                    MC_simulations = 500,
+#                    MC_seed = 1)
+# 
+# MC_out_plotter(temp, MC_grouping = MC_grouping)
+# MC_data = temp
+
 MC_out_plotter = function(MC_data,
                           MC_grouping = ""){
 
@@ -472,7 +506,7 @@ MC_out_plotter = function(MC_data,
                   unique())
   ) %>%
     replace_na(list(freq = 0)) %>%
-    arrange(group) %>%
+    arrange(!!MC_grouping) %>%
     separate(bin,
              into = c("min_bound","max_bound"),
              sep = ",",
