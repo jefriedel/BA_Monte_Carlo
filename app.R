@@ -404,8 +404,10 @@ server = function(input, output, session) {
         !(curr_data$sub=="") &
         !(curr_data$sess=="")) {
       enable("log_prop_calc")
+      enable("run_MC")
     } else{
       disable("log_prop_calc")
+      disable("run_MC")
     }
     
   })
