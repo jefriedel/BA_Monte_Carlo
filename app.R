@@ -1,6 +1,8 @@
 library(shiny)
 library(shinyjs)
-library(tidyverse)
+#library(tidyverse)
+library(dplyr)
+library(readr)
 library(janitor)
 library(rhandsontable)
 library(shinycssloaders)
@@ -282,8 +284,27 @@ ui =
                   for each group (if there were any groups). The red line on the panel displays the
                   mean(s) for the data the \"real\" data that was selected based on your filter. The gray 
                     bars are a histogram of the samples of data that were simulated by the Monte Carlo."),
+                  
                   actionButton(inputId = "run_MC",
                                "Run Monte Carlo Simulation")
+                  )),#Top column/row
+                  
+                  fluidRow(
+                    column(12,
+                           p(""),
+                    p("The \"Value for randomization\" box below displays a value that is used to produce
+                    the random samples for the Monte Carlo Simulation. You can use the value that was supplied when
+                    the app was loaded. If you use the same value, the Monte Carlo will give you the same result.
+                    Therefore, if you select your own value or re-use a previous value
+                    you can replicate your Monte Carlo outcome."),
+                  
+                  numericInput(inputId = "seed_val",
+                               label = "Value for randomization",
+                               min = 1,
+                               max = .Machine$integer.max,
+                               value = sample.int(.Machine$integer.max,
+                                                  1))
+                  
                 )#Top column
                 ),#Fluid row
                 
@@ -694,7 +715,7 @@ observeEvent(input$run_MC,{
           MC_filter = curr_data$filter,
           MC_grouping = input$group_select,
           MC_simulations = 500,
-          MC_seed = 1)
+          MC_seed = as.integer(input$seed_val))
   }else{
     showNotification("You must identify the comparison data
                      on the \"sample selection\" tab.",
