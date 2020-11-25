@@ -369,6 +369,9 @@ server = function(input, output, session) {
     curr_data$data = mc_data$upload$data
     curr_data$col_descript = mc_data$upload$col_names
     
+    curr_data$filter = NA
+    curr_data$MC_out = NA
+    
       
   })
   
@@ -454,6 +457,9 @@ server = function(input, output, session) {
     
     curr_data$data = mc_data$example$data
     curr_data$col_descript = mc_data$example$col_names
+    
+    curr_data$filter = NA
+    curr_data$MC_out = NA
     
   })
   
