@@ -1,3 +1,8 @@
+#Monte Carlo Shiny App for behavior analytic data
+#Code written by Jonathan E. Friedel
+#https://orcid.org/0000-0002-1516-330X
+#email: jfriedel@georgiasouthern.edu
+
 library(shiny)
 library(shinyjs)
 #library(tidyverse)
@@ -9,11 +14,12 @@ library(janitor)
 library(rhandsontable)
 library(shinycssloaders)
 
-options(shiny.reactlog = TRUE)
+options(shiny.reactlog = FALSE)
 
 source("./scripts/load_files.R")
 
 source("./scripts/helper_functions.R")
+
 
 { #Bracket for UI
 ui = 
@@ -392,7 +398,12 @@ ui =
                 h2("Author Information"),
                 column(12,
                        fluidRow(
-                         
+                         p("Jonathan E. Friedel, Ph.D."),
+                         tags$a(p(img(src = "ORCIDiD_icon24x24.png"),
+                           "https://orcid.org/0000-0002-1516-330X"),
+                           href = "https://orcid.org/0000-0002-1516-330X"),
+                         tags$a("jfriedel@georgiasouthern.edu",
+                                href = "mailto:jfriedel@georgiasouthern.edu?subject=Monte Carlo App")
                        )#rOW
                        )#Column
                 )} #Author information
