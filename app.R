@@ -3,6 +3,8 @@ library(shinyjs)
 #library(tidyverse)
 library(dplyr)
 library(readr)
+library(ggplot2)
+library(glue)
 library(janitor)
 library(rhandsontable)
 library(shinycssloaders)
@@ -339,6 +341,8 @@ ui =
                                      color.background = "#FFFFFF",
                                      size = 3,
                                      type = 2)
+                       ,downloadButton("dwn_fig",
+                                       label = "Download Figure")
                        ,
                        p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
                        groups were specified). The figure(s) will show a histogram of the means for each sample that
@@ -429,9 +433,19 @@ server = function(input, output, session) {
         !(curr_data$sess=="")) {
       enable("log_prop_calc")
       enable("run_MC")
+      
+      if(!is.na(curr_data$MC_out)){
+        enable("dwn_fig")
+      }
+        
     } else{
       disable("log_prop_calc")
       disable("run_MC")
+      disable("dwn_fig")
+    }
+    
+    if(is.na(curr_data$MC_out)){
+      disable("dwn_fig")
     }
     
   })
@@ -649,8 +663,10 @@ server = function(input, output, session) {
       "Run the Monte Carlo to display results."
     ))
     
-    MC_out_plotter(MC_data = curr_data$MC_out,
-                    MC_grouping = input$group_select)
+    curr_data$MC_fig = MC_out_plotter(MC_data = curr_data$MC_out,
+                                      MC_grouping = input$group_select)
+    
+    curr_data$MC_fig
     
   })
   
@@ -705,7 +721,7 @@ observeEvent(input$run_MC,{
   #Erase data for updating
   curr_data$MC_out = NULL
   
-  showNotification(input$group_select)
+  #showNotification(input$group_select)
   if(!is.na(curr_data$filter)){
     
     removeNotification(id = "no_filter_msg")
@@ -725,6 +741,24 @@ observeEvent(input$run_MC,{
   }
 })
   
+output$dwn_fig = downloadHandler(
+  
+  filename = function() {
+    glue("MC figure RV_{input$seed_val}.png")
+  },
+  
+  
+  content = function(file) {
+    ggsave(file, 
+           plot = curr_data$MC_fig,
+           device = "png",
+           width = 7,
+           height = 4,
+           units = "in",
+           dpi = 200)
+  }
+  
+)
 }#Server function
 
 shinyApp(ui, server)
