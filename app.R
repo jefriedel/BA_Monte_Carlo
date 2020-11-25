@@ -29,10 +29,11 @@ ui =
     #     margin-top: 0px;
     #   }"))), #CSS 
     
-    titlePanel(h1("Monte Carlo for SCED")),
+    titlePanel("Monte Carlo for SCED"),
             
             navlistPanel(
               "Data",
+              widths = c(3,9),
               
               #Row for data controls
               {tabPanel("Import",
@@ -320,7 +321,8 @@ ui =
                 fluidRow(
                   div((column(12,
                               p("A basic summary table will be displayed to show that the script is complete. On the
-                    \"MC results\" tab, you will find a figure and method to export the data.")
+                    \"MC results\" tab, you will find a figure and on the
+                                \"Downloads\" tab a method to export the data.")
                   )),
                   style = "margin-top: 8px;")) #Summary explanation
                 
@@ -341,8 +343,7 @@ ui =
                                      color.background = "#FFFFFF",
                                      size = 3,
                                      type = 2)
-                       ,downloadButton("dwn_fig",
-                                       label = "Download Figure")
+                       
                        ,
                        p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
                        groups were specified). The figure(s) will show a histogram of the means for each sample that
@@ -361,7 +362,40 @@ ui =
 
                         
                 
-              )}#MC Results
+              )},#MC Results
+              
+              {tabPanel("Downloads",
+                h2("Download MC Files"),
+                column(12,
+                       p("Click the \"Download Figure\" button if you would like
+                       a copy of the histogram on the \"MC Results\" panel."),
+                       
+                       downloadButton("dwn_fig",
+                                       label = "Download Figure"),
+                       p(""),
+                       
+                       p("Click the \"Download Data\" figure if you would like to
+                       download a full copy of the means of each simulated sample. Due
+                       to limitations of space on the server you can only download the
+                       means of the samples. The specific values that were randomly
+                       selected by the Monte Carlo for each sample are not saved."),
+                       
+                       downloadButton("dwn_dat",
+                                      label = "Download Monte Carlo data")
+                       ) #Column
+                )
+                }, #MC Download
+              
+              "Notes",
+              
+              {tabPanel("Author Information",
+                h2("Author Information"),
+                column(12,
+                       fluidRow(
+                         
+                       )#rOW
+                       )#Column
+                )} #Author information
               
             )#Nav
 
@@ -433,19 +467,20 @@ server = function(input, output, session) {
         !(curr_data$sess=="")) {
       enable("log_prop_calc")
       enable("run_MC")
-      
-      if(!is.na(curr_data$MC_out)){
-        enable("dwn_fig")
-      }
-        
-    } else{
+
+    }else{
       disable("log_prop_calc")
       disable("run_MC")
       disable("dwn_fig")
     }
     
-    if(is.na(curr_data$MC_out)){
+    
+    if(!is.na(curr_data$MC_out)){
+      enable("dwn_fig")
+      enable("dwn_dat")
+    }else{
       disable("dwn_fig")
+      disable("dwn_dat")
     }
     
   })
@@ -740,7 +775,9 @@ observeEvent(input$run_MC,{
                      duration = NULL)
   }
 })
-  
+
+#Download buttions
+{
 output$dwn_fig = downloadHandler(
   
   filename = function() {
@@ -759,6 +796,22 @@ output$dwn_fig = downloadHandler(
   }
   
 )
+  
+  output$dwn_dat = downloadHandler(
+    
+    filename = function() {
+      glue("MC output data RV_{input$seed_val}.csv")
+    },
+    
+    
+    content = function(file) {
+      write_csv(curr_data$MC_out$sim_data,
+                file = file)
+    }
+    
+  )
+  
+}
 }#Server function
 
 shinyApp(ui, server)

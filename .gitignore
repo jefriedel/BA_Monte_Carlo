@@ -11,6 +11,7 @@ desktop.ini
 *.Rproj
 *.dcf
 sample data 2.csv
+/images
 
 ### R ###
 # History files
