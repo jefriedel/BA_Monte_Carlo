@@ -87,3 +87,11 @@ temp = MC_func(MC_data = MC_data$data,
                    MC_grouping = MC_grouping,
                    MC_simulations = 500,
                    MC_seed = 1)
+#Fixing error with selecting session leading to crash
+
+#Testing filter error
+filter_criteria =
+  tibble(session = 1:5) %>%
+  mutate(data_color = "Include")
+
+"session" %in% colnames(filter_criteria)

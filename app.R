@@ -655,6 +655,15 @@ observeEvent(input$filter_update,{
         #Create included variable grid, add include
         curr_data$filter = cross_df(output_list)%>%
           mutate(data_color = "Include")
+        
+        if(make_clean_names(input$sess_select) %in% 
+           colnames(curr_data$filter)){
+          
+          curr_data$filter = curr_data$filter %>%
+            mutate(!!make_clean_names(input$sess_select):=
+                     as.integer(!!as.symbol(make_clean_names(input$sess_select))))
+        }
+        
       }else{
         #If the list is empty, return NA
         curr_data$filter = NA

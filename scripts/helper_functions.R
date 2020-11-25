@@ -66,21 +66,27 @@ log_prop_calc = function(full_data,
 # sessions_col = "Session"
 # subject_col = "Subject"
 # 
+# # Original
+# # filter_criteria =
+# #   tibble(condition = c("Baseline","Extinction"),
+# #          experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+# #   expand(condition, experimental_group) %>%
+# #   mutate(data_color = "Include")
+# 
+# #Testing filter error
 # filter_criteria =
-#   tibble(condition = c("Baseline","Extinction"),
-#          experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-#   expand(condition, experimental_group) %>%
+#   tibble(session = 1:5) %>%
 #   mutate(data_color = "Include")
 # 
 # color_criteria = NA
 # 
-# color_criteria = curr_data$filter
+# color_criteria = filter_criteria
 # 
 # #Colors for plotting
 # inc_colors = c("red","black")
 # names(inc_colors) = c("Include","Exclude")
 
-# 
+#
 # data_selection_plotter(figure_data = figure_data,
 #                        resp_col = resp_col,
 #                        sessions_col = sessions_col,
