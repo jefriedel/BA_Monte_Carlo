@@ -13,6 +13,7 @@ desktop.ini
 sample data 2.csv
 /images
 /rsconnect
+*.dcf
 
 ### R ###
 # History files
