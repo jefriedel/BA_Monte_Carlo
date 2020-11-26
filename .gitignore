@@ -12,7 +12,7 @@ desktop.ini
 *.dcf
 sample data 2.csv
 /images
-/rsconnect
+rsconnect/
 *.dcf
 
 ### R ###
