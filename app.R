@@ -394,10 +394,14 @@ ui =
               
               "Notes",
               
-              {tabPanel("Author Information",
-                h2("Author Information"),
+              
+              
+              {tabPanel("Program Information",
+                h2("Program Information"),
                 column(12,
                        fluidRow(
+                         h3("Monte Carlo Analysis for Single-Subject
+                            Experimental Designs (SCED)"),
                          p("Jonathan E. Friedel, Ph.D."),
                          tags$a(p(img(src = "ORCIDiD_icon24x24.png"),
                            "https://orcid.org/0000-0002-1516-330X"),
