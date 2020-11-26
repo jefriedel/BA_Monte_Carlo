@@ -9,11 +9,10 @@ data/desktop.ini
 scripts/desktop.ini
 desktop.ini
 *.Rproj
-*.dcf
+/*.dcf
+BA_MC_app.dcf
 sample data 2.csv
-/images
 rsconnect/
-*.dcf
 
 ### R ###
 # History files
