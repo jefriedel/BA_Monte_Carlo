@@ -62,3 +62,4 @@ vignettes/*.pdf
 
 # End of https://www.toptal.com/developers/gitignore/api/r
 
+rsconnect/shinyapps.io/jefriedel/BA_MC_app.dcf
