@@ -13,7 +13,8 @@ desktop.ini
 BA_MC_app.dcf
 sample data 2.csv
 rsconnect/
-Relapse.*
+/data/Relapse*.csv
+/data/MC_out.csv
 
 
 
