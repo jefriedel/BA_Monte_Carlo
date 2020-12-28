@@ -16,9 +16,9 @@ library(shinycssloaders)
 
 options(shiny.reactlog = FALSE)
 
-source("./scripts/load_files.R")
+source("./scripts/prod_load_files.R")
 
-source("./scripts/helper_functions.R")
+source("./scripts/prod_helper_functions.R")
 
 
 { #Bracket for UI
