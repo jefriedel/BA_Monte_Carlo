@@ -24,7 +24,7 @@ source("./scripts/helper_functions.R")
 { #Bracket for UI
 ui = 
     
-  fluidPage(
+  fluidPage(#theme = "GS_bootstrap.css",
     
     useShinyjs(),
     
@@ -351,10 +351,9 @@ ui =
                                      type = 2)
                        
                        ,
-                       p("When you have completed the Monte Carlo analysis a figure will be displayed(by groups, if 
-                       groups were specified). The figure(s) will show a histogram of the means for each sample that
-                       was simulated by the Monte Carlo Analysis. For example, if you specified 500 simulations,
-                       then the histogram will include 500 simulated means. The color for each bar 
+                       p("When you have completed the Monte Carlo analysis a figure will be displayed (by groups, if 
+                       groups were specified). The figure(s) will show a histogram of the means for each of the 1,000 samples that
+                       was simulated by the Monte Carlo Analysis.  The color for each bar 
                          are only included so that you can easily distinguish adjacent bars on the
                          histogram because the figure may appear small."),
                        p("The dashed black line shows you the mean of your \"real\" data. If the dashed line is
@@ -373,6 +372,9 @@ ui =
               {tabPanel("Downloads",
                 h2("Download MC Files"),
                 column(12,
+                       p(tags$b("Note:")," the default name of the download files will contain
+                         the value used for randomization (labeled as RV in file name) so
+                         that you can replicate your results."),
                        p("Click the \"Download Figure\" button if you would like
                        a copy of the histogram on the \"MC Results\" panel."),
                        
@@ -421,6 +423,8 @@ ui =
 server = function(input, output, session) {
   
   curr_data = reactiveValues()
+  
+  sim_count = 1000
   
   curr_data$filter = NA
   curr_data$MC_out = NA
@@ -780,7 +784,7 @@ observeEvent(input$run_MC,{
           MC_responses = curr_data$behv,
           MC_filter = curr_data$filter,
           MC_grouping = input$group_select,
-          MC_simulations = 500,
+          MC_simulations = sim_count,
           MC_seed = as.integer(input$seed_val))
   }else{
     showNotification("You must identify the comparison data
