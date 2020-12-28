@@ -16,6 +16,7 @@ rsconnect/
 /data/Relapse*.csv
 /data/MC_out.csv
 BA_MC_old.R
+sim_data.csv
 
 
 ### R ###
