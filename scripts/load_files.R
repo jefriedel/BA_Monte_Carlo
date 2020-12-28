@@ -3,7 +3,7 @@ library(janitor)
 
 mc_data = list()
 
-relapse1  = read_csv("./data/Relapse Data 1.csv",
+relapse1  = read_csv("./data/Examp_data.csv",
                      col_types = cols())
 
 mc_data$example$col_names = colnames(relapse1)
