@@ -442,37 +442,7 @@ ui =
               {tabPanel("Program Information",
                 h2("Program Information"),
                 p("Anonymized for peer review")
-                # column(12,
-                #        fluidRow(
-                #          h3("Monte Carlo Analysis for Single-Subject
-                #             Experimental Designs"),
-                #          p("Jonathan E. Friedel, Ph.D."),
-                #          tags$a(p(img(src = "ORCIDiD_icon24x24.png"),
-                #            "https://orcid.org/0000-0002-1516-330X"),
-                #            href = "https://orcid.org/0000-0002-1516-330X"),
-                #          tags$a("jfriedel@georgiasouthern.edu",
-                #                 href = "mailto:jfriedel@georgiasouthern.edu?subject=Monte Carlo App"),
-                #          h2("Links"),
-                #          tags$a("Files archived at the time of manuscript publication",
-                #                 href = "https://osf.io/gqtxz/"),
-                #          p(""),
-                #          tags$a(p("GitHub repository ",tags$b("NEED TO ACTUALLY DO THIS PART")),
-                #                 href = "https://www.google.com"),
-                #          
-                #          h2("References"),
-                #          div(p("Friedel, J.E., Galizio, A., Berry, M.S., Sweeney, M.M.,
-                #                & Odum, A.L. (2019). An alternative approach to relapse
-                #                analysis: Using Monte Carlo methods and proportional
-                #                rates of response.", tags$i("Journal of the Experimental
-                #                Analysis of Behavior,"),tags$i("111"),"(2),
-                #                289-308. ",tags$a("https://doi.org/10.1002/jeab.489",
-                #                                  href = "https://doi.org/10.1002/jeab.489")),
-                #              style = "text-indent: -36px; padding-left: 36px;")
-                #            
-                #          
-                #        )#rOW
-                #        ,tags$br(),tags$br(),tags$br(),tags$br()
-                #        )#Column
+                
                 )} #Author information
               
             )#Nav
