@@ -457,8 +457,8 @@ ui =
                          tags$a("Files archived at the time of manuscript publication",
                                 href = "https://osf.io/gqtxz/"),
                          p(""),
-                         tags$a(p("GitHub repository ",tags$b("NEED TO ACTUALLY DO THIS PART")),
-                                href = "https://www.google.com"),
+                         tags$a(p("GitHub repository"),
+                                href = "https://github.com/jefriedel/BA_Monte_Carlo"),
                          
                          h2("References"),
                          div(p("Friedel, J.E., Galizio, A., Berry, M.S., Sweeney, M.M.,
@@ -468,7 +468,24 @@ ui =
                                Analysis of Behavior,"),tags$i("111"),"(2),
                                289-308. ",tags$a("https://doi.org/10.1002/jeab.489",
                                                  href = "https://doi.org/10.1002/jeab.489")),
-                             style = "text-indent: -36px; padding-left: 36px;")
+                             style = "text-indent: -36px; padding-left: 36px;"),
+                         h2("Usage Requirements"),
+                         h3("Disclaimer"),
+                         p("Disclaimer: This Monte Carlo simulation is intended
+                           for informational purposes only.  The use of 
+                           confidential information is strictly prohibited when 
+                           running simulations. As a user, you are responsible 
+                           for differentiating confidential information from 
+                           non-confidential information."),
+                         h3("Confidential includes but is not limited to:"),
+                         p(tags$ul(
+                          tags$li("Name"),
+                          tags$li("Date of Birth"),
+                          tags$li("Social Security Number"),
+                          tags$li("Phone Number"),
+                          tags$li("Any other personally identifying information")
+                         ))
+                         
                            
                          
                        )#rOW
