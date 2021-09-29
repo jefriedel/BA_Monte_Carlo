@@ -471,7 +471,7 @@ ui =
                              style = "text-indent: -36px; padding-left: 36px;"),
                          h2("Usage Requirements"),
                          h3("Disclaimer"),
-                         p("Disclaimer: This Monte Carlo simulation is intended
+                         p("This Monte Carlo simulation is intended
                            for informational purposes only.  The use of 
                            confidential information is strictly prohibited when 
                            running simulations. As a user, you are responsible 
