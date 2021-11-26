@@ -715,7 +715,7 @@ server = function(input, output, session) {
     colnames(subs) = c(curr_data$sub,
                        curr_data$sess,
                        input$behv_select,
-                       "log Prob. Resp.")
+                       "log Prop. Resp.")
     
     output$log_prop_display = renderTable(
 
