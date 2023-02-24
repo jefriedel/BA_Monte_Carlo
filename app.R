@@ -564,7 +564,7 @@ server = function(input, output, session) {
         !(curr_data$sub=="") &
         !(curr_data$sess=="")) {
       enable("log_prop_calc")
-      if(!is.na(curr_data$filter)){
+      if(!any(is.na(curr_data$filter))){
       enable("run_MC")
       }
 
@@ -575,7 +575,7 @@ server = function(input, output, session) {
     }
     
     
-    if(!is.na(curr_data$MC_out)){
+    if(!any(is.na(curr_data$MC_out))){
       enable("dwn_fig")
       enable("dwn_dat")
     }else{
@@ -783,7 +783,7 @@ server = function(input, output, session) {
   output$MC_main = renderTable({
     
     validate(need(
-      !is.na(curr_data$MC_out),
+      !any(is.na(curr_data$MC_out)),
       "Select a filter and run the Monte Carlo to display a summary of results."
     ))
     
@@ -797,7 +797,7 @@ server = function(input, output, session) {
   output$MC_results = renderPlot({
     
     validate(need(
-      !is.na(curr_data$MC_out),
+      !any(is.na(curr_data$MC_out)),
       "Select a filter and run the Monte Carlo to display results."
     ))
     
@@ -860,7 +860,7 @@ observeEvent(input$run_MC,{
   curr_data$MC_out = NULL
   
   #showNotification(input$group_select)
-  if(!is.na(curr_data$filter)){
+  if(!any(is.na(curr_data$filter))){
     
     removeNotification(id = "no_filter_msg")
   #Function output works, but nothing is output to the app currently
