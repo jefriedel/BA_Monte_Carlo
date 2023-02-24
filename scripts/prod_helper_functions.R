@@ -58,21 +58,22 @@ log_prop_calc = function(full_data,
 
   return(full_data)
 }
-# #Function for plotting input/filtering----
-# 
-# #Data for testing plotting function
+#Function for plotting input/filtering----
+
+# #Data for testing plotting function 
+{
 # figure_data = mc_data$example$data
 # resp_col = "Responses"
 # sessions_col = "Session"
 # subject_col = "Subject"
-# 
-# # Original
-# # filter_criteria =
-# #   tibble(condition = c("Baseline","Extinction"),
-# #          experimental_group = c("Sal_Sal","Amp_Sal")) %>%
-# #   expand(condition, experimental_group) %>%
-# #   mutate(data_color = "Include")
-# 
+# #
+# # # Original
+# # # filter_criteria =
+# # #   tibble(condition = c("Baseline","Extinction"),
+# # #          experimental_group = c("Sal_Sal","Amp_Sal")) %>%
+# # #   expand(condition, experimental_group) %>%
+# # #   mutate(data_color = "Include")
+# #
 # #Testing filter error
 # filter_criteria =
 #   tibble(session = 1:5) %>%
@@ -85,13 +86,14 @@ log_prop_calc = function(full_data,
 # #Colors for plotting
 # inc_colors = c("red","black")
 # names(inc_colors) = c("Include","Exclude")
-
-#
+# 
+# 
 # data_selection_plotter(figure_data = figure_data,
 #                        resp_col = resp_col,
 #                        sessions_col = sessions_col,
-#                        subject_col = subject_col)
-
+#                        subject_col = subject_col,
+#                        color_criteria = color_criteria)
+}
 # #Function to plot data for seleecting filter
 data_selection_plotter = function(figure_data,
                                   resp_col,
@@ -107,7 +109,7 @@ data_selection_plotter = function(figure_data,
   }
   
   #Join inclusion figure to data
-  if(is.na(color_criteria)) {
+  if(any(is.na(color_criteria))) {
 
     #If there is no filter, exclude everything
     figure_data = figure_data %>%
@@ -140,6 +142,7 @@ data_selection_plotter = function(figure_data,
 
 
 #Function for MC simulations----
+{
 # #Variables for testing build
 # MC_data = mc_data$example$data
 # 
@@ -216,7 +219,7 @@ data_selection_plotter = function(figure_data,
 #                    MC_grouping = MC_grouping,
 #                    MC_simulations = 500,
 #                    MC_seed = 1)
-
+}
 
 MC_func = function(MC_data,
                    MC_responses,
@@ -230,7 +233,7 @@ MC_responses = as.symbol(make_clean_names(MC_responses))
 
 MC_data = MC_data %>% ungroup()
 
-if(is.na(MC_grouping) | MC_grouping == ""){
+if(any(is.na(MC_grouping)) | MC_grouping == ""){
 
   #If there is no grouping factor, create one with no groups
   MC_data = MC_data %>% mutate(grouping = "None")
@@ -241,7 +244,7 @@ if(is.na(MC_grouping) | MC_grouping == ""){
 MC_grouping = as.symbol(make_clean_names(MC_grouping))
 
 
-if(is.na(MC_filter)) {
+if(any(is.na(MC_filter))) {
   #If there is no MC_filter, include everything
 
   MC_data = MC_data %>%
