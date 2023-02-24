@@ -503,7 +503,7 @@ server = function(input, output, session) {
   
   curr_data = reactiveValues()
   
-  sim_count = 1000
+  sim_count = 10000
   
   curr_data$filter = NA
   curr_data$MC_out = NA
